@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { store } from '../data/store';
+import { parsePositiveInt } from '../utils/pagination';
 import type {
   Category,
   Paginated,
@@ -17,11 +18,6 @@ function withCategory(
       ? categories.find((c) => c.id === product.categoryId) ?? null
       : null,
   };
-}
-
-function parsePositiveInt(value: unknown, fallback: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
 }
 
 export const productsRouter = Router();
@@ -89,8 +85,18 @@ function validateProductBody(body: unknown): { error?: string; value?: Omit<Prod
   const b = body as Record<string, unknown>;
   const name = typeof b.name === 'string' ? b.name.trim() : '';
   const sku = typeof b.sku === 'string' ? b.sku.trim() : '';
-  const price = typeof b.price === 'number' ? b.price : Number(b.price);
-  const cost = typeof b.cost === 'number' ? b.cost : Number(b.cost);
+  const price =
+    typeof b.price === 'number'
+      ? b.price
+      : typeof b.price === 'string'
+        ? Number(b.price)
+        : NaN;
+  const cost =
+    typeof b.cost === 'number'
+      ? b.cost
+      : typeof b.cost === 'string'
+        ? Number(b.cost)
+        : NaN;
   const categoryId = b.categoryId === null || b.categoryId === undefined ? null : String(b.categoryId);
   const unit = typeof b.unit === 'string' ? b.unit : 'each';
   const description = typeof b.description === 'string' ? b.description : '';

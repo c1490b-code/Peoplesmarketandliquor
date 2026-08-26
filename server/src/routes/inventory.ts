@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { store } from '../data/store';
+import { parsePositiveInt } from '../utils/pagination';
 import type {
   InventoryItem,
   InventoryPatch,
@@ -20,11 +21,6 @@ function toView(item: InventoryItem, products: Product[]): InventoryView {
     product: products.find((p) => p.id === item.productId) ?? null,
     status: statusOf(item),
   };
-}
-
-function parsePositiveInt(value: unknown, fallback: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
 }
 
 export const inventoryRouter = Router();
