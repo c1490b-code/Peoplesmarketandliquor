@@ -41,3 +41,7 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Runtime data store
+server/src/data/db.json
+data/

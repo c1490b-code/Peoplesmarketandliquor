@@ -57,3 +57,45 @@ npm start
 | `npm start`                | Start the production server                   |
 | `npm run lint`             | Lint both client and server                   |
 | `npm run type-check`       | Type-check both client and server             |
+
+## Data Store
+
+The API uses a lightweight JSON-file data store (seeded on first run). Data is
+persisted to `server/src/data/db.json` (git-ignored). Override the path with the
+`DATA_FILE` environment variable.
+
+## API Reference
+
+### Products
+- `GET /api/products` — list with optional `q` (search), `category`, `sort`
+  (`name`, `sku`, `priceAsc`, `priceDesc`, `newest`), `page`, `limit`. Returns a
+  paginated result with the product's category joined in.
+- `GET /api/products/:id` — single product
+- `POST /api/products` — create product (fields: `name`, `sku`, `categoryId`,
+  `price`, `cost`, `unit`, `description`). SKU must be unique.
+- `PUT /api/products/:id` — update product
+- `DELETE /api/products/:id` — delete product and its inventory record
+
+### Inventory
+- `GET /api/inventory` — list inventory joined with product data and a computed
+  `status` (`out`, `low`, `ok`). Supports `lowStock=true`, `category`, `sort`
+  (`name`, `stockAsc`, `stockDesc`, `status`), `page`, `limit`.
+- `GET /api/inventory/:id` — single inventory item
+- `PATCH /api/inventory/:id` — update `quantityOnHand`, `reorderLevel`,
+  `lowStockThreshold`, and/or `location`.
+
+### Categories
+- `GET /api/categories` — list all categories
+- `GET /api/categories/:id` — single category
+- `POST /api/categories` — create category (`name`, `description`)
+- `PUT /api/categories/:id` — update category
+- `DELETE /api/categories/:id` — delete category (blocked if in use by products)
+
+## Frontend
+
+- `/products` — ProductsList: table view with search, category filter, sort,
+  pagination, and low-stock indicators. Add/edit via a modal form.
+- `/inventory` — Inventory tracking with stock-level bars, status badges,
+  low-stock filter/alerts, and an adjust-stock modal.
+- `/categories` — Category management (create, edit, delete).
+
