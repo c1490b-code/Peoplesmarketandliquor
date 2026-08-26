@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const RegisterPage = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'cashier' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -40,7 +40,7 @@ export const RegisterPage = () => {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, password: formData.password, name: formData.name, role: formData.role })
+        body: JSON.stringify({ email: formData.email, password: formData.password, name: formData.name })
       });
 
       const data = await res.json();
@@ -96,14 +96,6 @@ export const RegisterPage = () => {
               placeholder="Enter your email"
               autoComplete="email"
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
-            <select id="role" name="role" value={formData.role} onChange={handleChange}>
-              <option value="cashier">Cashier</option>
-              <option value="admin">Admin</option>
-            </select>
           </div>
 
           <div className="form-group">
