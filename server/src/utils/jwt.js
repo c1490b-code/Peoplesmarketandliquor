@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
+let JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  JWT_SECRET = crypto.randomBytes(64).toString('hex');
+  console.warn('WARNING: JWT_SECRET is not set. Using a randomly generated secret. Set JWT_SECRET in production.');
 }
 
-const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = '7d';
 
 const generateToken = (user) => {
