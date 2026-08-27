@@ -1,3 +1,44 @@
+export type UserRole = 'admin' | 'cashier';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  passwordHash: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserInput {
+  email: string;
+  name: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: Omit<User, 'passwordHash'>;
+}
+
+export interface MeResponse {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -48,10 +89,18 @@ export interface InventoryView extends InventoryItem {
   status: 'out' | 'low' | 'ok';
 }
 
-export interface Paginated<T> {
-  data: T[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
+export type ProductQuery = {
+  q?: string;
+  category?: string;
+  sort?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type InventoryQuery = {
+  lowStock?: boolean;
+  category?: string;
+  sort?: string;
+  page?: number;
+  limit?: number;
+};

@@ -6,12 +6,16 @@ import type {
   InventoryItem,
   Product,
   ProductInput,
+  User,
+  UserInput,
+  UserRole,
 } from '../types';
 
 interface Database {
   categories: Category[];
   products: Product[];
   inventory: InventoryItem[];
+  users: User[];
 }
 
 const DATA_FILE = process.env.DATA_FILE || 'data/db.json';
@@ -77,7 +81,31 @@ function seed(): Database {
     });
   }
 
-  return { categories, products, inventory };
+  return { categories, products, inventory, users: [] };
+}
+
+function seedUsers(): User[] {
+  const ts = now();
+  return [
+    {
+      id: randomUUID(),
+      email: 'admin@market.com',
+      name: 'Admin User',
+      role: 'admin',
+      passwordHash: '$2b$10$rQ7H8pZnJQ8x8n5X7Z9qOe1qW3vY8kL0mN2pQ5sT8uV1wX4yZ6aBc', 
+      createdAt: ts,
+      updatedAt: ts,
+    },
+    {
+      id: randomUUID(),
+      email: 'cashier@market.com',
+      name: 'Cashier User',
+      role: 'cashier',
+      passwordHash: '$2b$10$rQ7H8pZnJQ8x8n5X7Z9qOe1qW3vY8kL0mN2pQ5sT8uV1wX4yZ6aBc',
+      createdAt: ts,
+      updatedAt: ts,
+    },
+  ];
 }
 
 function seedCategory(name: string): Category {
@@ -98,7 +126,7 @@ class Store {
     this.db = this.load();
   }
 
-  private load(): Database {
+  load(): Database {
     try {
       if (existsSync(DATA_FILE)) {
         const raw = readFileSync(DATA_FILE, 'utf-8');
@@ -107,14 +135,16 @@ class Store {
           categories: parsed.categories ?? [],
           products: parsed.products ?? [],
           inventory: parsed.inventory ?? [],
+          users: parsed.users ?? seedUsers(),
         };
       }
     } catch {
       // fall through to seed
     }
     const seeded = seed();
-    this.persist(seeded);
-    return seeded;
+    const users = seedUsers();
+    this.persist({ ...seeded, users });
+    return { ...seeded, users };
   }
 
   private persist(db: Database = this.db): void {
@@ -262,6 +292,64 @@ class Store {
     item.updatedAt = now();
     this.persist();
     return item;
+  }
+
+  // ----- Users -----
+  listUsers(): Omit<User, 'passwordHash'>[] {
+    return this.db.users.map((u) => {
+      const { passwordHash: _ph, ...rest } = u;
+      return rest;
+    });
+  }
+
+  getUserByEmail(email: string): (User & { passwordHash: string }) | undefined {
+    return this.db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  }
+
+  getUserById(id: string): Omit<User, 'passwordHash'> | undefined {
+    const user = this.db.users.find((u) => u.id === id);
+    if (!user) return undefined;
+    const { passwordHash: _ph, ...rest } = user;
+    return rest;
+  }
+
+  createUser(input: UserInput, passwordHash: string): Omit<User, 'passwordHash'> {
+    return this.createUserInternal(input.email, input.name, input.role ?? 'cashier', passwordHash);
+  }
+
+  private createUserInternal(email: string, name: string, role: UserRole, passwordHash: string): Omit<User, 'passwordHash'> {
+    const ts = now();
+    const user: User = {
+      id: randomUUID(),
+      email: email.trim().toLowerCase(),
+      name: name.trim(),
+      role,
+      passwordHash,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+    this.db.users.push(user);
+    this.persist();
+    const { passwordHash: _ph, ...rest } = user;
+    return rest;
+  }
+
+  updateUserPassword(id: string, passwordHash: string): void {
+    const user = this.db.users.find((u) => u.id === id);
+    if (!user) return;
+    user.passwordHash = passwordHash;
+    user.updatedAt = now();
+    this.persist();
+  }
+
+  ensureUser(email: string, name: string, role: UserRole, passwordHash: string): Omit<User, 'passwordHash'> {
+    const existing = this.getUserByEmail(email);
+    if (existing) {
+      this.updateUserPassword(existing.id, passwordHash);
+      const { passwordHash: _ph, ...rest } = existing;
+      return rest;
+    }
+    return this.createUserInternal(email, name, role, passwordHash);
   }
 }
 

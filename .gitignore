@@ -43,5 +43,5 @@ coverage/
 *.tsbuildinfo
 
 # Runtime data store
+server/data/
 server/src/data/db.json
-/data/

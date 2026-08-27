@@ -1,3 +1,27 @@
+export type UserRole = 'admin' | 'cashier';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface AuthContextValue {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, name: string, password: string, role?: 'admin' | 'cashier') => Promise<void>;
+  logout: () => Promise<void>;
+}
+
 export interface Category {
   id: string;
   name: string;
