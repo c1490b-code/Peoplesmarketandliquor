@@ -1,7 +1,47 @@
-node_modules
-dist
-.data.db
-server/data.db
-server/src/data.db
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+dist/
+build/
+*/dist/
+*/build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
 *.log
-.vite
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Coverage
+coverage/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# Runtime data store
+server/src/data/db.json
+/data/
