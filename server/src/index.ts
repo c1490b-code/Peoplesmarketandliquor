@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import { productsRouter } from './routes/products';
@@ -13,15 +15,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-async function seedDemoUsers() {
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const cashierHash = await bcrypt.hash('cashier123', 10);
-  store.ensureUser('admin@market.com', 'Admin User', 'admin', adminHash);
-  store.ensureUser('cashier@market.com', 'Cashier User', 'cashier', cashierHash);
-}
-
-app.use(cors());
-app.use(express.json());
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+app.use(cors({ origin: corsOrigin, credentials: true }));
+app.use(helmet());
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+app.use(cookieParser());
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Peoples Market & Liquor API' });
@@ -44,7 +43,18 @@ app.use((err: Error, _req: Request, res: Response) => {
 store.load();
 
 seedDemoUsers().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  if (require.main === module) {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 });
+
+export { app };
+
+async function seedDemoUsers() {
+  const adminHash = await bcrypt.hash('admin123', 10);
+  const cashierHash = await bcrypt.hash('cashier123', 10);
+  store.ensureUser('admin@market.com', 'Admin User', 'admin', adminHash);
+  store.ensureUser('cashier@market.com', 'Cashier User', 'cashier', cashierHash);
+}

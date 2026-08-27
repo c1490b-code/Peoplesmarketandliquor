@@ -18,6 +18,7 @@ const BASE = '/api';
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     ...options,
   });
   if (res.status === 204) {
@@ -28,11 +29,6 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     throw new Error((body as { error?: string }).error || `Request failed (${res.status})`);
   }
   return body as T;
-}
-
-function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function qs(params: object): string {
@@ -61,12 +57,9 @@ export const api = {
     logout: () =>
       request<void>(`${BASE}/auth/logout`, {
         method: 'POST',
-        headers: { ...authHeaders() },
       }),
     me: () =>
-      request<User>(`${BASE}/auth/me`, {
-        headers: { ...authHeaders() },
-      }),
+      request<User>(`${BASE}/auth/me`),
   },
   products: {
     list: (query: ProductQuery = {}) =>
