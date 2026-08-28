@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { store } from '../data/store';
+import { authMiddleware, requireRole } from '../middleware/auth';
 
 export const categoriesRouter = Router();
 
@@ -30,7 +31,7 @@ function validateCategoryBody(body: unknown): {
   return { value: { name, description } };
 }
 
-categoriesRouter.post('/', (req: Request, res: Response) => {
+categoriesRouter.post('/', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const { error, value } = validateCategoryBody(req.body);
   if (error || !value) {
     res.status(400).json({ error });
@@ -47,7 +48,7 @@ categoriesRouter.post('/', (req: Request, res: Response) => {
   res.status(201).json(category);
 });
 
-categoriesRouter.put('/:id', (req: Request, res: Response) => {
+categoriesRouter.put('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const existing = store.getCategory(req.params.id);
   if (!existing) {
     res.status(404).json({ error: 'Category not found' });
@@ -69,7 +70,7 @@ categoriesRouter.put('/:id', (req: Request, res: Response) => {
   res.json(updated);
 });
 
-categoriesRouter.delete('/:id', (req: Request, res: Response) => {
+categoriesRouter.delete('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const inUse = store
     .listProducts()
     .some((p) => p.categoryId === req.params.id);

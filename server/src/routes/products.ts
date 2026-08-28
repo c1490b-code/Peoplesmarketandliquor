@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { store } from '../data/store';
 import { parsePositiveInt } from '../utils/pagination';
+import { authMiddleware, requireRole } from '../middleware/auth';
 import type {
   Category,
   Paginated,
@@ -123,7 +124,7 @@ function validateProductBody(body: unknown): { error?: string; value?: Omit<Prod
   };
 }
 
-productsRouter.post('/', (req: Request, res: Response) => {
+productsRouter.post('/', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const { error, value } = validateProductBody(req.body);
   if (error || !value) {
     res.status(400).json({ error });
@@ -137,7 +138,7 @@ productsRouter.post('/', (req: Request, res: Response) => {
   res.status(201).json(withCategory(product, store.listCategories()));
 });
 
-productsRouter.put('/:id', (req: Request, res: Response) => {
+productsRouter.put('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const existing = store.getProduct(req.params.id);
   if (!existing) {
     res.status(404).json({ error: 'Product not found' });
@@ -157,7 +158,7 @@ productsRouter.put('/:id', (req: Request, res: Response) => {
   res.json(withCategory(updated!, store.listCategories()));
 });
 
-productsRouter.delete('/:id', (req: Request, res: Response) => {
+productsRouter.delete('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const ok = store.deleteProduct(req.params.id);
   if (!ok) {
     res.status(404).json({ error: 'Product not found' });

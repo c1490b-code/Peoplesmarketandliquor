@@ -2,13 +2,13 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { store } from '../data/store';
 import { authMiddleware } from '../middleware/auth';
-import { signToken, revokeToken } from '../utils/jwt';
+import { signToken, revokeToken, verifyToken } from '../utils/jwt';
 import { authLimiter } from '../utils/rateLimit';
 import type { AuthResponse, User, UserInput, UserRole } from '../types';
 
 export const authRouter = Router();
 
-function validateRegisterBody(body: unknown): { error?: string; value?: UserInput } {
+function validateRegisterBody(body: unknown): { error?: string; value?: Omit<UserInput, 'role'> } {
   if (typeof body !== 'object' || body === null) {
     return { error: 'Invalid request body' };
   }
@@ -16,16 +16,14 @@ function validateRegisterBody(body: unknown): { error?: string; value?: UserInpu
   const email = typeof b.email === 'string' ? b.email.trim() : '';
   const name = typeof b.name === 'string' ? b.name.trim() : '';
   const password = typeof b.password === 'string' ? b.password : '';
-  const role = typeof b.role === 'string' ? (b.role as UserRole) : undefined;
   const errors: string[] = [];
   if (!email) errors.push('email is required');
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('email is invalid');
   if (!name) errors.push('name is required');
   if (!password) errors.push('password is required');
   else if (password.length < 6) errors.push('password must be at least 6 characters');
-  if (role && !['admin', 'cashier'].includes(role)) errors.push('role must be admin or cashier');
   if (errors.length) return { error: errors.join('; ') };
-  return { value: { email, name, password, role } };
+  return { value: { email, name, password } };
 }
 
 function validateLoginBody(body: unknown): { error?: string; value?: { email: string; password: string } } {
@@ -64,8 +62,30 @@ authRouter.post('/register', authLimiter(), async (req: Request, res: Response) 
       res.status(409).json({ error: 'An account with this email already exists' });
       return;
     }
+
+    let role: UserRole = 'cashier';
+    const requestedRole = (req.body as Record<string, unknown>).role;
+    if (typeof requestedRole === 'string' && (requestedRole === 'admin' || requestedRole === 'cashier')) {
+      const token = req.cookies?.token;
+      if (!token) {
+        res.status(403).json({ error: 'Only admins can assign roles during registration' });
+        return;
+      }
+      try {
+        const decoded = verifyToken(token);
+        if (decoded.role !== 'admin') {
+          res.status(403).json({ error: 'Only admins can assign roles during registration' });
+          return;
+        }
+        role = requestedRole as UserRole;
+      } catch {
+        res.status(401).json({ error: 'Invalid authentication token' });
+        return;
+      }
+    }
+
     const passwordHash = await bcrypt.hash(value.password, 10);
-    const user = store.createUser(value, passwordHash);
+    const user = store.createUser({ ...value, role }, passwordHash);
     const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
     const response: AuthResponse = { token, user };
     setAuthCookie(res, token);

@@ -44,7 +44,7 @@ function qs(params: object): string {
 
 export const api = {
   auth: {
-    register: (input: { email: string; name: string; password: string; role?: 'admin' | 'cashier' }) =>
+    register: (input: { email: string; name: string; password: string }) =>
       request<AuthResponse>(`${BASE}/auth/register`, {
         method: 'POST',
         body: JSON.stringify(input),

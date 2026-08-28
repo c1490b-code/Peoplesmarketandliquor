@@ -19,8 +19,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(response.user);
   }
 
-  async function register(email: string, name: string, password: string, role?: 'admin' | 'cashier') {
-    const response = await api.auth.register({ email, name, password, role });
+  async function register(email: string, name: string, password: string) {
+    const response = await api.auth.register({ email, name, password });
     setUser(response.user);
   }
 

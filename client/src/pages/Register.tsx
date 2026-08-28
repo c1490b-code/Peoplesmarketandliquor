@@ -7,7 +7,6 @@ export function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'cashier'>('cashier');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { user, register } = useAuth();
@@ -24,7 +23,7 @@ export function Register() {
     }
     setSubmitting(true);
     try {
-      await register(email, name, password, role);
+      await register(email, name, password);
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -83,17 +82,6 @@ export function Register() {
             className="w-full rounded border border-gray-300 px-3 py-2"
             placeholder="Repeat password"
           />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'admin' | 'cashier')}
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="cashier">Cashier</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
         <button
           type="submit"

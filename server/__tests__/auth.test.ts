@@ -29,11 +29,37 @@ describe('POST /api/auth/register', () => {
     expect(cookies.some(c => c.startsWith('token=') && c.includes('HttpOnly'))).toBe(true);
   });
 
-  it('registers a new admin user when role is provided', async () => {
-    const email = uniqueEmail('admin');
+  it('defaults new registrations to cashier', async () => {
+    const email = uniqueEmail('default');
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email, name: 'Admin Two', password: 'password123', role: 'admin' });
+      .send({ email, name: 'New User', password: 'password123' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user.role).toBe('cashier');
+  });
+
+  it('rejects role assignment without admin auth', async () => {
+    const email = uniqueEmail('norole');
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({ email, name: 'No Role', password: 'password123', role: 'admin' });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('allows admin to assign roles during registration', async () => {
+    const adminLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'admin@market.com', password: 'admin123' });
+    const adminCookies = adminLogin.headers['set-cookie'] as unknown as string[];
+    const adminCookieHeader = adminCookies.map(c => c.split(';')[0]).join('; ');
+
+    const email = uniqueEmail('adminassign');
+    const res = await request(app)
+      .post('/api/auth/register')
+      .set('Cookie', adminCookieHeader)
+      .send({ email, name: 'Admin Assign', password: 'password123', role: 'admin' });
 
     expect(res.status).toBe(201);
     expect(res.body.user.role).toBe('admin');

@@ -1,14 +1,19 @@
 import jwt from 'jsonwebtoken';
 
+let cachedSecret: string | undefined;
+
 function getSecret(): string {
+  if (cachedSecret) return cachedSecret;
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('JWT_SECRET must be set in production');
     }
-    throw new Error('JWT_SECRET is required. Set it in your environment.');
+    cachedSecret = `dev-secret-${process.pid}-${Date.now()}`;
+    return cachedSecret;
   }
-  return secret;
+  cachedSecret = secret;
+  return cachedSecret;
 }
 
 const TOKEN_TTL = '7d';

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { store } from '../data/store';
 import { parsePositiveInt } from '../utils/pagination';
+import { authMiddleware, requireRole } from '../middleware/auth';
 import type {
   InventoryItem,
   InventoryPatch,
@@ -112,7 +113,7 @@ function validateInventoryPatch(body: unknown): {
   return { value: out };
 }
 
-inventoryRouter.patch('/:id', (req: Request, res: Response) => {
+inventoryRouter.patch('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const existing = store.getInventory(req.params.id);
   if (!existing) {
     res.status(404).json({ error: 'Inventory item not found' });
