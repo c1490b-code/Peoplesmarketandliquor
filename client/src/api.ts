@@ -1,11 +1,16 @@
 import type {
   Category,
   CreateOrderInput,
+  Customer,
+  CustomerInput,
+  CustomerQuery,
   InventoryItem,
   InventoryPatch,
   InventoryQuery,
+  InventoryStatus,
   InventoryView,
   Order,
+  OrderQuery,
   Paginated,
   Product,
   ProductInput,
@@ -84,6 +89,25 @@ export const api = {
       }),
     remove: (id: string) => request<void>(`${BASE}/categories/${id}`, { method: 'DELETE' }),
   },
+  customers: {
+    list: (query: CustomerQuery = {}) =>
+      request<Paginated<Customer>>(`${BASE}/customers${qs(query)}`),
+    get: (id: string) => request<Customer>(`${BASE}/customers/${id}`),
+    create: (input: CustomerInput) =>
+      request<Customer>(`${BASE}/customers`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    update: (id: string, input: CustomerInput) =>
+      request<Customer>(`${BASE}/customers/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(input),
+      }),
+    remove: (id: string) =>
+      request<void>(`${BASE}/customers/${id}`, { method: 'DELETE' }),
+    orders: (id: string, query: OrderQuery = {}) =>
+      request<Paginated<Order>>(`${BASE}/customers/${id}/orders${qs(query)}`),
+  },
   orders: {
     list: (query: { q?: string; paymentMethod?: string; customerId?: string; page?: number; limit?: number } = {}) =>
       request<Paginated<Order>>(`${BASE}/orders${qs(query)}`),
@@ -96,4 +120,21 @@ export const api = {
   },
 };
 
-export type { Product, ProductWithCategory, Category, InventoryView, InventoryItem };
+export type {
+  Category,
+  Customer,
+  CustomerInput,
+  CustomerQuery,
+  InventoryItem,
+  InventoryPatch,
+  InventoryQuery,
+  InventoryStatus,
+  InventoryView,
+  Order,
+  OrderQuery,
+  Paginated,
+  Product,
+  ProductInput,
+  ProductQuery,
+  ProductWithCategory,
+};

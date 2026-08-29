@@ -6,6 +6,7 @@ export function Layout({ children }: { children?: ReactNode }) {
     { to: '/pos', label: 'POS' },
     { to: '/products', label: 'Products' },
     { to: '/inventory', label: 'Inventory' },
+    { to: '/customers', label: 'Customers' },
     { to: '/categories', label: 'Categories' },
   ];
 

@@ -4,6 +4,8 @@ import { dirname } from 'node:path';
 import type {
   Category,
   CreateOrderInput,
+  Customer,
+  CustomerInput,
   InventoryItem,
   Order,
   OrderItem,
@@ -17,6 +19,7 @@ interface Database {
   categories: Category[];
   products: Product[];
   inventory: InventoryItem[];
+  customers: Customer[];
   orders: Order[];
 }
 
@@ -87,7 +90,63 @@ function seed(): Database {
     });
   }
 
-  return { categories, products, inventory, orders: [] };
+  const customers: Customer[] = [
+    seedCustomer('John Smith', 'john@example.com', '555-0101', '123 Main St', 'Regular customer'),
+    seedCustomer('Jane Doe', 'jane@example.com', '555-0102', '456 Oak Ave', 'Prefers Bud Light'),
+    seedCustomer('Bob Johnson', 'bob@example.com', '555-0103', '789 Pine Rd', 'Wholesale account'),
+  ];
+
+  const orders: Order[] = [];
+  const date = ts.slice(0, 10).replace(/-/g, '');
+  for (let c = 0; c < customers.length; c++) {
+    const customer = customers[c];
+    const itemCount = 1 + Math.floor(Math.random() * 3);
+    const orderItems: OrderItem[] = [];
+    const shuffled = [...products].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < itemCount && i < shuffled.length; i++) {
+      const p = shuffled[i];
+      const qty = 1 + Math.floor(Math.random() * 3);
+      orderItems.push({
+        id: randomUUID(),
+        productId: p.id,
+        name: p.name,
+        sku: p.sku,
+        unit: p.unit,
+        quantity: qty,
+        unitPrice: p.price,
+        cost: p.cost,
+        lineTotal: round2(p.price * qty),
+      });
+    }
+    const subtotal = round2(orderItems.reduce((s, i) => s + i.lineTotal, 0));
+    const taxRate = 0.08;
+    const discountTotal = 0;
+    const taxable = round2(subtotal - discountTotal);
+    const taxTotal = round2(taxable * taxRate);
+    const total = round2(taxable + taxTotal);
+    orders.push({
+      id: randomUUID(),
+      orderNumber: `PML-${date}-${String(c + 1).padStart(4, '0')}`,
+      customerId: customer.id,
+      cashierId: null,
+      items: orderItems,
+      subtotal,
+      discountType: 'none',
+      discountValue: 0,
+      discountTotal,
+      taxRate,
+      taxTotal,
+      total,
+      paymentMethod: 'cash',
+      amountTendered: total,
+      changeDue: 0,
+      status: 'completed',
+      createdAt: ts,
+      updatedAt: ts,
+    });
+  }
+
+  return { categories, products, inventory, customers, orders };
 }
 
 function seedCategory(name: string): Category {
@@ -96,6 +155,26 @@ function seedCategory(name: string): Category {
     id: randomUUID(),
     name,
     description: `${name} products`,
+    createdAt: ts,
+    updatedAt: ts,
+  };
+}
+
+function seedCustomer(
+  name: string,
+  email: string,
+  phone: string,
+  address: string,
+  notes: string,
+): Customer {
+  const ts = now();
+  return {
+    id: randomUUID(),
+    name,
+    email,
+    phone,
+    address,
+    notes,
     createdAt: ts,
     updatedAt: ts,
   };
@@ -117,6 +196,7 @@ class Store {
           categories: parsed.categories ?? [],
           products: parsed.products ?? [],
           inventory: parsed.inventory ?? [],
+          customers: parsed.customers ?? [],
           orders: parsed.orders ?? [],
         };
       }
@@ -275,6 +355,48 @@ class Store {
     return item;
   }
 
+  // ----- Customers -----
+  listCustomers(): Customer[] {
+    return [...this.db.customers];
+  }
+
+  getCustomer(id: string): Customer | undefined {
+    return this.db.customers.find((c) => c.id === id);
+  }
+
+  createCustomer(input: CustomerInput): Customer {
+    const ts = now();
+    const customer: Customer = {
+      id: randomUUID(),
+      createdAt: ts,
+      updatedAt: ts,
+      ...input,
+    };
+    this.db.customers.push(customer);
+    this.persist();
+    return customer;
+  }
+
+  updateCustomer(
+    id: string,
+    input: Partial<CustomerInput>,
+  ): Customer | undefined {
+    const customer = this.getCustomer(id);
+    if (!customer) return undefined;
+    Object.assign(customer, input);
+    customer.updatedAt = now();
+    this.persist();
+    return customer;
+  }
+
+  deleteCustomer(id: string): boolean {
+    const idx = this.db.customers.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    this.db.customers.splice(idx, 1);
+    this.persist();
+    return true;
+  }
+
   // ----- Orders -----
   listOrders(): Order[] {
     return [...this.db.orders];
@@ -282,6 +404,10 @@ class Store {
 
   getOrder(id: string): Order | undefined {
     return this.db.orders.find((o) => o.id === id);
+  }
+
+  getOrdersByCustomer(customerId: string): Order[] {
+    return this.db.orders.filter((o) => o.customerId === customerId);
   }
 
   private nextOrderNumber(): string {
@@ -388,7 +514,9 @@ class Store {
       paymentMethod: input.paymentMethod,
       amountTendered,
       changeDue,
+      status: 'completed',
       createdAt: ts,
+      updatedAt: ts,
     };
 
     for (const { item, quantity } of decrements) {
