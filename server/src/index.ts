@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { productsRouter } from './routes/products';
 import { inventoryRouter } from './routes/inventory';
 import { categoriesRouter } from './routes/categories';
+import { ordersRouter } from './routes/orders';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 app.use('/api/products', productsRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/categories', categoriesRouter);
+app.use('/api/orders', ordersRouter);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });

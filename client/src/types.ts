@@ -73,3 +73,72 @@ export type InventoryPatch = Partial<
     'quantityOnHand' | 'reorderLevel' | 'lowStockThreshold' | 'location'
   >
 >;
+
+export type PaymentMethod = 'cash' | 'card' | 'other';
+
+export type DiscountType = 'none' | 'percent' | 'amount';
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  name: string;
+  sku: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  cost: number;
+  lineTotal: number;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  customerId: string | null;
+  cashierId: string | null;
+  items: OrderItem[];
+  subtotal: number;
+  discountType: DiscountType;
+  discountValue: number;
+  discountTotal: number;
+  taxRate: number;
+  taxTotal: number;
+  total: number;
+  paymentMethod: PaymentMethod;
+  amountTendered: number | null;
+  changeDue: number | null;
+  createdAt: string;
+}
+
+export interface CreateOrderItemInput {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateOrderInput {
+  items: CreateOrderItemInput[];
+  customerId?: string | null;
+  cashierId?: string | null;
+  discountType?: DiscountType;
+  discountValue?: number;
+  taxRate?: number;
+  paymentMethod: PaymentMethod;
+  amountTendered?: number | null;
+}
+
+export interface CartLine {
+  productId: string;
+  name: string;
+  sku: string;
+  unit: string;
+  unitPrice: number;
+  quantity: number;
+  stockOnHand: number;
+}
+
+export interface OrderSummary {
+  subtotal: number;
+  discountTotal: number;
+  taxRate: number;
+  taxTotal: number;
+  total: number;
+}

@@ -91,8 +91,30 @@ persisted to `server/src/data/db.json` (git-ignored). Override the path with the
 - `PUT /api/categories/:id` — update category
 - `DELETE /api/categories/:id` — delete category (blocked if in use by products)
 
+### Orders
+- `GET /api/orders` — list orders (newest first) with optional `q` (order number
+  or item name/SKU), `paymentMethod`, `customerId`, `page`, `limit`.
+- `GET /api/orders/:id` — single order (used for receipt retrieval).
+- `POST /api/orders` — create an order. Body:
+  - `items` (required): array of `{ productId, quantity }`. Quantities must be
+    positive integers; insufficient stock returns `409`.
+  - `paymentMethod` (required): `cash`, `card`, or `other`.
+  - `discountType` (optional): `none` (default), `percent`, or `amount`.
+  - `discountValue` (optional): number (percent 0–100, or dollar amount).
+  - `taxRate` (optional): fraction 0–1, defaults to `0.0825` (8.25%).
+  - `customerId` / `cashierId` (optional): linked customer / cashier.
+  - `amountTendered` (optional, required for `cash`): amount received; must be ≥
+    the order total, otherwise `400`. Generates `changeDue`.
+  - Inventory is decremented atomically on a successful sale. The response is the
+    created `Order` with computed subtotal, discount, tax, total, and receipt
+    fields.
+
 ## Frontend
 
+- `/pos` — Point of Sale: product grid with search/category filter, cart sidebar
+  with quantity controls and discount options (percent/amount), a payment modal
+  supporting cash/card/other (with change calculation for cash), and an order
+  confirmation + receipt preview with print support.
 - `/products` — ProductsList: table view with search, category filter, sort,
   pagination, and low-stock indicators. Add/edit via a modal form.
 - `/inventory` — Inventory tracking with stock-level bars, status badges,
