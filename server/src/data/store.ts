@@ -101,11 +101,13 @@ function seedCategory(name: string): Category {
   };
 }
 
-class Store {
+export class Store {
   private db: Database;
+  private orderCounter: number;
 
   constructor() {
     this.db = this.load();
+    this.orderCounter = this.db.orders.length;
   }
 
   private load(): Database {
@@ -284,10 +286,16 @@ class Store {
     return this.db.orders.find((o) => o.id === id);
   }
 
-  private nextOrderNumber(): string {
-    const seq = this.db.orders.length + 1;
+  resetForTest(): void {
+    this.db.orders = [];
+    this.orderCounter = 0;
+    this.persist();
+  }
+
+  nextOrderNumber(): string {
+    this.orderCounter += 1;
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    return `PML-${date}-${String(seq).padStart(4, '0')}`;
+    return `PML-${date}-${String(this.orderCounter).padStart(4, '0')}`;
   }
 
   createOrder(
@@ -402,5 +410,14 @@ class Store {
   }
 }
 
-export const store = new Store();
+let store = new Store();
+export { store };
+
+export function getStore(): Store {
+  return store;
+}
+
+export function setStore(next: Store): void {
+  store = next;
+}
 export { DEFAULT_TAX_RATE };

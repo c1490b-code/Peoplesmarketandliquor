@@ -182,7 +182,7 @@ export function POS() {
 
   // keep tendered synced to total while cash modal is open
   useEffect(() => {
-    if (payOpen && payMethod === 'cash' && tendered === '') {
+    if (payOpen && payMethod === 'cash' && tendered !== summary.total.toFixed(2)) {
       setTendered(summary.total.toFixed(2));
     }
   }, [payOpen, payMethod, tendered, summary.total]);
@@ -329,16 +329,17 @@ export function POS() {
                 <option value="percent">% off</option>
                 <option value="amount">$ off</option>
               </select>
-              {discountType !== 'none' && (
-                <input
-                  type="number"
-                  min="0"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                  placeholder={discountType === 'percent' ? '0-100' : '0.00'}
-                  className="w-20 rounded border border-gray-300 px-2 py-1 text-xs"
-                />
-              )}
+               {discountType !== 'none' && (
+                 <input
+                   type="number"
+                   min="0"
+                   max="100"
+                   value={discountValue}
+                   onChange={(e) => setDiscountValue(e.target.value)}
+                   placeholder={discountType === 'percent' ? '0-100' : '0.00'}
+                   className="w-20 rounded border border-gray-300 px-2 py-1 text-xs"
+                 />
+               )}
             </div>
 
             <div className="space-y-1 text-sm">
