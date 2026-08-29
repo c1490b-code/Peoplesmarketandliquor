@@ -1,9 +1,11 @@
 import type {
   Category,
+  CreateOrderInput,
   InventoryItem,
   InventoryPatch,
   InventoryQuery,
   InventoryView,
+  Order,
   Paginated,
   Product,
   ProductInput,
@@ -81,6 +83,16 @@ export const api = {
         body: JSON.stringify(input),
       }),
     remove: (id: string) => request<void>(`${BASE}/categories/${id}`, { method: 'DELETE' }),
+  },
+  orders: {
+    list: (query: { q?: string; paymentMethod?: string; customerId?: string; page?: number; limit?: number } = {}) =>
+      request<Paginated<Order>>(`${BASE}/orders${qs(query)}`),
+    get: (id: string) => request<Order>(`${BASE}/orders/${id}`),
+    create: (input: CreateOrderInput) =>
+      request<Order>(`${BASE}/orders`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
   },
 };
 

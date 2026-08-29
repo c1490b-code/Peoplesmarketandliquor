@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 export function Layout({ children }: { children?: ReactNode }) {
   const links = [
+    { to: '/pos', label: 'POS' },
     { to: '/products', label: 'Products' },
     { to: '/inventory', label: 'Inventory' },
     { to: '/categories', label: 'Categories' },

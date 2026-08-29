@@ -3,15 +3,25 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type {
   Category,
+  CreateOrderInput,
   InventoryItem,
+  Order,
+  OrderItem,
   Product,
   ProductInput,
 } from '../types';
+
+const DEFAULT_TAX_RATE = 0.0825;
 
 interface Database {
   categories: Category[];
   products: Product[];
   inventory: InventoryItem[];
+  orders: Order[];
+}
+
+function round2(n: number): number {
+  return Number((Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2));
 }
 
 const DATA_FILE = process.env.DATA_FILE || 'data/db.json';
@@ -77,7 +87,7 @@ function seed(): Database {
     });
   }
 
-  return { categories, products, inventory };
+  return { categories, products, inventory, orders: [] };
 }
 
 function seedCategory(name: string): Category {
@@ -107,6 +117,7 @@ class Store {
           categories: parsed.categories ?? [],
           products: parsed.products ?? [],
           inventory: parsed.inventory ?? [],
+          orders: parsed.orders ?? [],
         };
       }
     } catch {
@@ -263,6 +274,133 @@ class Store {
     this.persist();
     return item;
   }
+
+  // ----- Orders -----
+  listOrders(): Order[] {
+    return [...this.db.orders];
+  }
+
+  getOrder(id: string): Order | undefined {
+    return this.db.orders.find((o) => o.id === id);
+  }
+
+  private nextOrderNumber(): string {
+    const seq = this.db.orders.length + 1;
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    return `PML-${date}-${String(seq).padStart(4, '0')}`;
+  }
+
+  createOrder(
+    input: CreateOrderInput,
+  ): { order?: Order; error?: string; status?: number } {
+    if (!input.items.length) {
+      return { error: 'An order must contain at least one item', status: 400 };
+    }
+
+    const merged = new Map<string, number>();
+    for (const line of input.items) {
+      merged.set(line.productId, (merged.get(line.productId) ?? 0) + line.quantity);
+    }
+
+    const items: OrderItem[] = [];
+    const decrements: Array<{ item: InventoryItem; quantity: number }> = [];
+
+    for (const [productId, quantity] of merged) {
+      const product = this.getProduct(productId);
+      if (!product) {
+        return { error: `Product ${productId} not found`, status: 404 };
+      }
+      const inv = this.getInventoryByProduct(productId);
+      const onHand = inv?.quantityOnHand ?? 0;
+      if (onHand < quantity) {
+        return {
+          error: `Insufficient stock for "${product.name}": ${onHand} on hand, ${quantity} requested`,
+          status: 409,
+        };
+      }
+      if (inv) decrements.push({ item: inv, quantity });
+      items.push({
+        id: randomUUID(),
+        productId: product.id,
+        name: product.name,
+        sku: product.sku,
+        unit: product.unit,
+        quantity,
+        unitPrice: product.price,
+        cost: product.cost,
+        lineTotal: round2(product.price * quantity),
+      });
+    }
+
+    const subtotal = round2(items.reduce((sum, i) => sum + i.lineTotal, 0));
+
+    const discountType = input.discountType ?? 'none';
+    const discountValue = input.discountValue ?? 0;
+    let discountTotal = 0;
+    if (discountType === 'percent') {
+      discountTotal = round2(subtotal * (discountValue / 100));
+    } else if (discountType === 'amount') {
+      discountTotal = round2(discountValue);
+    }
+    discountTotal = Math.min(Math.max(discountTotal, 0), subtotal);
+
+    const taxRate = input.taxRate ?? DEFAULT_TAX_RATE;
+    const taxable = round2(subtotal - discountTotal);
+    const taxTotal = round2(taxable * taxRate);
+    const total = round2(taxable + taxTotal);
+
+    const amountTendered =
+      input.amountTendered === undefined || input.amountTendered === null
+        ? null
+        : round2(input.amountTendered);
+
+    if (input.paymentMethod === 'cash') {
+      if (amountTendered === null) {
+        return { error: 'amountTendered is required for cash payments', status: 400 };
+      }
+      if (amountTendered < total) {
+        return {
+          error: `Amount tendered (${amountTendered.toFixed(2)}) is less than the order total (${total.toFixed(2)})`,
+          status: 400,
+        };
+      }
+    }
+
+    const changeDue =
+      input.paymentMethod === 'cash' && amountTendered !== null
+        ? round2(amountTendered - total)
+        : null;
+
+    const ts = now();
+    const order: Order = {
+      id: randomUUID(),
+      orderNumber: this.nextOrderNumber(),
+      customerId: input.customerId ?? null,
+      cashierId: input.cashierId ?? null,
+      items,
+      subtotal,
+      discountType,
+      discountValue,
+      discountTotal,
+      taxRate,
+      taxTotal,
+      total,
+      paymentMethod: input.paymentMethod,
+      amountTendered,
+      changeDue,
+      createdAt: ts,
+    };
+
+    for (const { item, quantity } of decrements) {
+      item.quantityOnHand = Math.max(0, item.quantityOnHand - quantity);
+      item.updatedAt = ts;
+    }
+
+    this.db.orders.push(order);
+    this.persist();
+    return { order };
+  }
 }
 
 export const store = new Store();
+export { DEFAULT_TAX_RATE };
