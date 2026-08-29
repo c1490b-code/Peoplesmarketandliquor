@@ -60,6 +60,19 @@ export type PaymentMethod = 'cash' | 'card' | 'other';
 
 export type DiscountType = 'none' | 'percent' | 'amount';
 
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
+
 export interface OrderItem {
   id: string;
   productId: string;
@@ -88,7 +101,9 @@ export interface Order {
   paymentMethod: PaymentMethod;
   amountTendered: number | null;
   changeDue: number | null;
+  status: 'pending' | 'completed' | 'refunded';
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateOrderItemInput {
@@ -105,4 +120,29 @@ export interface CreateOrderInput {
   taxRate?: number;
   paymentMethod: PaymentMethod;
   amountTendered?: number | null;
+}
+
+export interface OrderQuery {
+  status?: string;
+  sort?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface CartLine {
+  productId: string;
+  name: string;
+  sku: string;
+  unit: string;
+  unitPrice: number;
+  quantity: number;
+  stockOnHand: number;
+}
+
+export interface OrderSummary {
+  subtotal: number;
+  discountTotal: number;
+  taxRate: number;
+  taxTotal: number;
+  total: number;
 }
