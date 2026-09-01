@@ -10,6 +10,7 @@ import type {
 } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { SalesChart } from '../components/SalesChart';
+import { KpiCard } from '../components/KpiCard';
 
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -123,13 +124,7 @@ export function Dashboard() {
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <div
-            key={card.label}
-            className="rounded-lg border border-gray-200 bg-white px-5 py-4 shadow-sm"
-          >
-            <span className="text-sm font-medium text-gray-500">{card.label}</span>
-            <div className="mt-1 text-2xl font-bold text-gray-900">{card.value}</div>
-          </div>
+          <KpiCard key={card.label} label={card.label} value={card.value} />
         ))}
       </div>
 
