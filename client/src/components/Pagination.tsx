@@ -19,8 +19,8 @@ export function Pagination({
   const to = Math.min(page * limit, total);
 
   return (
-    <div className="flex flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
-      <div className="text-sm text-gray-600">
+    <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 px-4 py-3 dark:border-gray-800 sm:flex-row">
+      <div className="text-sm text-gray-600 dark:text-gray-400">
         Showing <span className="font-medium">{from}</span>–
         <span className="font-medium">{to}</span> of{' '}
         <span className="font-medium">{total}</span>
@@ -30,7 +30,7 @@ export function Pagination({
           <select
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             {[10, 25, 50].map((n) => (
               <option key={n} value={n}>
@@ -43,17 +43,17 @@ export function Pagination({
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
-            className="rounded border border-gray-300 px-3 py-1 text-sm disabled:opacity-40"
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-sm disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             Prev
           </button>
-          <span className="px-2 text-sm text-gray-600">
+          <span className="px-2 text-sm text-gray-600 dark:text-gray-400">
             Page {page} / {totalPages}
           </span>
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
-            className="rounded border border-gray-300 px-3 py-1 text-sm disabled:opacity-40"
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-sm disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             Next
           </button>

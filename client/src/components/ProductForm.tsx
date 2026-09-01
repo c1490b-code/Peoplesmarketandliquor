@@ -20,6 +20,10 @@ const empty: ProductInput = {
   description: '',
 };
 
+const inputClass =
+  'mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100';
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
+
 export function ProductForm({ open, product, categories, onClose, onSubmit }: ProductFormProps) {
   const [form, setForm] = useState<ProductInput>(empty);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +84,7 @@ export function ProductForm({ open, product, categories, onClose, onSubmit }: Pr
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Cancel
           </button>
@@ -96,34 +100,36 @@ export function ProductForm({ open, product, categories, onClose, onSubmit }: Pr
       }
     >
       {error && (
-        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-100">
+          {error}
+        </div>
       )}
       <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className={labelClass}>Name</label>
             <input
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">SKU</label>
+            <label className={labelClass}>SKU</label>
             <input
               value={form.sku}
               onChange={(e) => update('sku', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Category</label>
+            <label className={labelClass}>Category</label>
             <select
               value={form.categoryId ?? ''}
               onChange={(e) => update('categoryId', e.target.value || null)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             >
               <option value="">Uncategorized</option>
               {categories.map((c) => (
@@ -134,44 +140,44 @@ export function ProductForm({ open, product, categories, onClose, onSubmit }: Pr
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+            <label className={labelClass}>Price ($)</label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={form.price}
               onChange={(e) => update('price', Number(e.target.value))}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Cost ($)</label>
+            <label className={labelClass}>Cost ($)</label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={form.cost}
               onChange={(e) => update('cost', Number(e.target.value))}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Unit</label>
+            <label className={labelClass}>Unit</label>
             <input
               value={form.unit}
               onChange={(e) => update('unit', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <label className={labelClass}>Description</label>
             <textarea
               value={form.description}
               onChange={(e) => update('description', e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>

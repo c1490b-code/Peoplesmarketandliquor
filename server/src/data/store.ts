@@ -6,6 +6,7 @@ import type {
   CreateOrderInput,
   Customer,
   CustomerInput,
+  Database,
   DashboardPeriod,
   DashboardSummary,
   InventoryItem,
@@ -18,16 +19,8 @@ import type {
   TopProduct,
   TopProductSort,
 } from '../types';
-
-const DEFAULT_TAX_RATE = 0.0825;
-
-interface Database {
-  categories: Category[];
-  products: Product[];
-  inventory: InventoryItem[];
-  customers: Customer[];
-  orders: Order[];
-}
+import { DEFAULT_TAX_RATE } from './constants';
+import { buildSeedData } from './seed';
 
 function round2(n: number): number {
   return Number((Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2));
@@ -37,153 +30,6 @@ const DATA_FILE = process.env.DATA_FILE || 'data/db.json';
 
 function now(): string {
   return new Date().toISOString();
-}
-
-function seed(): Database {
-  const categories: Category[] = [
-    seedCategory('Beer'),
-    seedCategory('Wine'),
-    seedCategory('Spirits'),
-    seedCategory('Grocery'),
-    seedCategory('Snacks'),
-    seedCategory('Tobacco'),
-  ];
-
-  const rawProducts: Array<Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & {
-    quantityOnHand: number;
-    reorderLevel: number;
-    lowStockThreshold: number;
-  }> = [
-    { name: 'Bud Light 12pk', sku: 'BEER-BL-12', categoryId: categories[0].id, price: 12.99, cost: 8.5, unit: 'case', description: 'Bud Light 12 pack cans', quantityOnHand: 42, reorderLevel: 20, lowStockThreshold: 10 },
-    { name: 'Corona Extra 6pk', sku: 'BEER-CO-06', categoryId: categories[0].id, price: 9.99, cost: 6.2, unit: 'case', description: 'Corona Extra 6 pack bottles', quantityOnHand: 4, reorderLevel: 15, lowStockThreshold: 8 },
-    { name: 'Modelo Especial 12pk', sku: 'BEER-MO-12', categoryId: categories[0].id, price: 14.49, cost: 9.1, unit: 'case', description: 'Modelo Especial 12 pack', quantityOnHand: 0, reorderLevel: 18, lowStockThreshold: 9 },
-    { name: 'Cabernet Sauvignon', sku: 'WINE-CAB-750', categoryId: categories[1].id, price: 18.0, cost: 11.0, unit: 'bottle', description: 'California Cabernet 750ml', quantityOnHand: 26, reorderLevel: 12, lowStockThreshold: 6 },
-    { name: 'Chardonnay', sku: 'WINE-CHD-750', categoryId: categories[1].id, price: 15.5, cost: 9.5, unit: 'bottle', description: 'California Chardonnay 750ml', quantityOnHand: 13, reorderLevel: 12, lowStockThreshold: 6 },
-    { name: 'Jack Daniels Whiskey', sku: 'SPIRIT-JD-750', categoryId: categories[2].id, price: 29.99, cost: 19.0, unit: 'bottle', description: 'Jack Daniels Old No. 7 750ml', quantityOnHand: 31, reorderLevel: 10, lowStockThreshold: 5 },
-    { name: "Tito's Vodka", sku: 'SPIRIT-TV-750', categoryId: categories[2].id, price: 24.99, cost: 15.5, unit: 'bottle', description: "Tito's Handmade Vodka 750ml", quantityOnHand: 7, reorderLevel: 10, lowStockThreshold: 5 },
-    { name: 'Smirnoff Vodka', sku: 'SPIRIT-SM-750', categoryId: categories[2].id, price: 16.99, cost: 10.0, unit: 'bottle', description: 'Smirnoff No. 21 750ml', quantityOnHand: 22, reorderLevel: 10, lowStockThreshold: 5 },
-    { name: 'Coca-Cola 2L', sku: 'GROC-CC-2L', categoryId: categories[3].id, price: 2.49, cost: 1.1, unit: 'bottle', description: 'Coca-Cola 2 liter', quantityOnHand: 58, reorderLevel: 24, lowStockThreshold: 12 },
-    { name: 'Bottled Water 24pk', sku: 'GROC-BW-24', categoryId: categories[3].id, price: 4.99, cost: 2.5, unit: 'case', description: 'Spring water 24 pack', quantityOnHand: 33, reorderLevel: 20, lowStockThreshold: 10 },
-    { name: "Lay's Potato Chips", sku: 'SNACK-LC-01', categoryId: categories[4].id, price: 3.29, cost: 1.5, unit: 'bag', description: 'Classic potato chips', quantityOnHand: 9, reorderLevel: 15, lowStockThreshold: 8 },
-    { name: 'Beef Jerky', sku: 'SNACK-BJ-01', categoryId: categories[4].id, price: 5.99, cost: 3.0, unit: 'pack', description: 'Original beef jerky', quantityOnHand: 17, reorderLevel: 10, lowStockThreshold: 5 },
-    { name: 'Marlboro Reds', sku: 'TOB-MR-01', categoryId: categories[5].id, price: 9.5, cost: 6.0, unit: 'pack', description: 'Marlboro Red cigarettes', quantityOnHand: 3, reorderLevel: 20, lowStockThreshold: 10 },
-    { name: 'Newport Menthol', sku: 'TOB-NM-01', categoryId: categories[5].id, price: 9.5, cost: 6.0, unit: 'pack', description: 'Newport Menthol cigarettes', quantityOnHand: 21, reorderLevel: 20, lowStockThreshold: 10 },
-  ];
-
-  const products: Product[] = [];
-  const inventory: InventoryItem[] = [];
-  const ts = now();
-
-  for (const raw of rawProducts) {
-    const { quantityOnHand, reorderLevel, lowStockThreshold, ...productFields } =
-      raw;
-    const product: Product = {
-      id: randomUUID(),
-      createdAt: ts,
-      updatedAt: ts,
-      ...productFields,
-    };
-    products.push(product);
-    inventory.push({
-      id: randomUUID(),
-      productId: product.id,
-      quantityOnHand,
-      reorderLevel,
-      lowStockThreshold,
-      location: 'Main Floor',
-      lastRestockedAt: ts,
-      updatedAt: ts,
-    });
-  }
-
-  const customers: Customer[] = [
-    seedCustomer('John Smith', 'john@example.com', '555-0101', '123 Main St', 'Regular customer'),
-    seedCustomer('Jane Doe', 'jane@example.com', '555-0102', '456 Oak Ave', 'Prefers Bud Light'),
-    seedCustomer('Bob Johnson', 'bob@example.com', '555-0103', '789 Pine Rd', 'Wholesale account'),
-  ];
-
-  const orders: Order[] = [];
-  const date = ts.slice(0, 10).replace(/-/g, '');
-  for (let c = 0; c < customers.length; c++) {
-    const customer = customers[c];
-    const itemCount = 1 + Math.floor(Math.random() * 3);
-    const orderItems: OrderItem[] = [];
-    const shuffled = [...products].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < itemCount && i < shuffled.length; i++) {
-      const p = shuffled[i];
-      const qty = 1 + Math.floor(Math.random() * 3);
-      orderItems.push({
-        id: randomUUID(),
-        productId: p.id,
-        name: p.name,
-        sku: p.sku,
-        unit: p.unit,
-        quantity: qty,
-        unitPrice: p.price,
-        cost: p.cost,
-        lineTotal: round2(p.price * qty),
-      });
-    }
-    const subtotal = round2(orderItems.reduce((s, i) => s + i.lineTotal, 0));
-    const taxRate = 0.08;
-    const discountTotal = 0;
-    const taxable = round2(subtotal - discountTotal);
-    const taxTotal = round2(taxable * taxRate);
-    const total = round2(taxable + taxTotal);
-    orders.push({
-      id: randomUUID(),
-      orderNumber: `PML-${date}-${String(c + 1).padStart(4, '0')}`,
-      customerId: customer.id,
-      cashierId: null,
-      items: orderItems,
-      subtotal,
-      discountType: 'none',
-      discountValue: 0,
-      discountTotal,
-      taxRate,
-      taxTotal,
-      total,
-      paymentMethod: 'cash',
-      amountTendered: total,
-      changeDue: 0,
-      status: 'completed',
-      createdAt: ts,
-      updatedAt: ts,
-    });
-  }
-
-  return { categories, products, inventory, customers, orders };
-}
-
-function seedCategory(name: string): Category {
-  const ts = now();
-  return {
-    id: randomUUID(),
-    name,
-    description: `${name} products`,
-    createdAt: ts,
-    updatedAt: ts,
-  };
-}
-
-function seedCustomer(
-  name: string,
-  email: string,
-  phone: string,
-  address: string,
-  notes: string,
-): Customer {
-  const ts = now();
-  return {
-    id: randomUUID(),
-    name,
-    email,
-    phone,
-    address,
-    notes,
-    createdAt: ts,
-    updatedAt: ts,
-  };
 }
 
 function formatDate(d: Date): string {
@@ -234,7 +80,7 @@ class Store {
     } catch {
       // fall through to seed
     }
-    const seeded = seed();
+    const seeded = buildSeedData();
     this.persist(seeded);
     return seeded;
   }

@@ -9,6 +9,8 @@ import type {
 import { Pagination } from '../components/Pagination';
 import { StatusBadge } from '../components/StatusBadge';
 import { InventoryModal } from '../components/InventoryModal';
+import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
+import { useToast } from '../components/toastContext';
 
 type SortKey = 'name' | 'stockAsc' | 'stockDesc' | 'status';
 
@@ -27,30 +29,37 @@ export function Inventory() {
   const [modalOpen, setModalOpen] = useState(false);
   const [active, setActive] = useState<InventoryView | null>(null);
   const [lowCount, setLowCount] = useState(0);
+  const toast = useToast();
 
-  const load = () => {
+  const load = async () => {
     setLoading(true);
     setError(null);
-    const query: InventoryQuery = {
-      category,
-      lowStock: lowStockOnly,
-      sort,
-      page,
-      limit,
-    };
-    api.inventory
-      .list(query)
-      .then((res) => {
-        setItems(res.data);
-        setTotal(res.total);
-        setTotalPages(res.totalPages);
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load inventory'))
-      .finally(() => setLoading(false));
+    try {
+      const query: InventoryQuery = {
+        category,
+        lowStock: lowStockOnly,
+        sort,
+        page,
+        limit,
+      };
+      const res = await api.inventory.list(query);
+      setItems(res.data);
+      setTotal(res.total);
+      setTotalPages(res.totalPages);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load inventory');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    api.categories.list().then(setCategories).catch(() => {});
+    api.categories
+      .list()
+      .then(setCategories)
+      .catch((err) =>
+        toast.error(err instanceof Error ? err.message : 'Failed to load categories'),
+      );
   }, []);
 
   useEffect(() => {
@@ -75,10 +84,18 @@ export function Inventory() {
 
   const handlePatch = async (patch: InventoryPatch) => {
     if (!active) return;
-    await api.inventory.update(active.id, patch);
-    setModalOpen(false);
-    setActive(null);
-    load();
+    try {
+      await api.inventory.update(active.id, patch);
+      toast.success(
+        `Updated inventory for ${active.product?.name ?? active.productId}`,
+      );
+      setModalOpen(false);
+      setActive(null);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update inventory');
+      throw err;
+    }
   };
 
   const stockBar = (item: InventoryView) => {
@@ -91,7 +108,7 @@ export function Inventory() {
           ? 'bg-amber-500'
           : 'bg-green-500';
     return (
-      <div className="h-2 w-full overflow-hidden rounded bg-gray-200">
+      <div className="h-2 w-full overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
         <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     );
@@ -101,11 +118,11 @@ export function Inventory() {
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Inventory</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Inventory</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Track stock levels
             {lowCount > 0 && (
-              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/60 dark:text-amber-100">
                 {lowCount} low / out
               </span>
             )}
@@ -114,18 +131,19 @@ export function Inventory() {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input
             type="checkbox"
             checked={lowStockOnly}
             onChange={(e) => setLowStockOnly(e.target.checked)}
+            className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800"
           />
           Low stock only
         </label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -137,7 +155,7 @@ export function Inventory() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         >
           <option value="status">Sort: Need attention</option>
           <option value="name">Sort: Name</option>
@@ -147,67 +165,82 @@ export function Inventory() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4">
+          <ErrorState
+            title="Couldn't load inventory"
+            error={error}
+            onRetry={load}
+          />
+        </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">On hand</th>
-              <th className="px-4 py-3">Level</th>
-              <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                  Loading…
-                </td>
-              </tr>
-            ) : items.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                  No inventory items
-                </td>
-              </tr>
-            ) : (
-              items.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {item.product?.name ?? item.productId}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={item.status} />
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{item.quantityOnHand}</td>
-                  <td className="w-40 px-4 py-3">{stockBar(item)}</td>
-                  <td className="px-4 py-3 text-gray-500">{item.location || '—'}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => openAdjust(item)}
-                      className="text-sky-600 hover:underline"
-                    >
-                      Adjust
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          limit={limit}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
-        />
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        {loading ? (
+          <LoadingState message="Loading inventory…" />
+        ) : items.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              title="No inventory items"
+              description={
+                lowStockOnly
+                  ? 'No items are at or below their low-stock threshold.'
+                  : 'Add products to start tracking inventory.'
+              }
+            />
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
+                <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-800 dark:text-gray-300">
+                  <tr>
+                    <th className="px-4 py-3">Product</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">On hand</th>
+                    <th className="px-4 py-3">Level</th>
+                    <th className="px-4 py-3">Location</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {items.map((item) => (
+                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                        {item.product?.name ?? item.productId}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={item.status} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-200">
+                        {item.quantityOnHand}
+                      </td>
+                      <td className="w-40 px-4 py-3">{stockBar(item)}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
+                        {item.location || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => openAdjust(item)}
+                          className="font-medium text-sky-600 hover:underline dark:text-sky-400"
+                        >
+                          Adjust
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              limit={limit}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
+            />
+          </>
+        )}
       </div>
 
       <InventoryModal

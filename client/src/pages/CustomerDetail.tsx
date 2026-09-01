@@ -3,8 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import type { Customer, Order } from '../types';
 import { Pagination } from '../components/Pagination';
+import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
+import { useToast } from '../components/toastContext';
 
 type SortKey = 'newest' | 'oldest' | 'totalAsc' | 'totalDesc';
+
+const inputClass =
+  'mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100';
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
 
 export function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,9 +25,16 @@ export function CustomerDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', address: '', notes: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    notes: '',
+  });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
 
   const load = async () => {
     if (!id) return;
@@ -77,6 +90,7 @@ export function CustomerDetail() {
       });
       setCustomer(updated);
       setEditing(false);
+      toast.success('Customer updated');
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Failed to update customer');
     } finally {
@@ -88,9 +102,10 @@ export function CustomerDetail() {
     if (!customer || !window.confirm(`Delete "${customer.name}"? This cannot be undone.`)) return;
     try {
       await api.customers.remove(customer.id);
+      toast.success(`Deleted "${customer.name}"`);
       navigate('/customers');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete customer');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete customer');
     }
   };
 
@@ -105,14 +120,16 @@ export function CustomerDetail() {
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
   if (loading) {
-    return (
-      <div className="px-4 py-8 text-center text-gray-400">Loading…</div>
-    );
+    return <LoadingState message="Loading customer…" />;
   }
 
   if (error || !customer) {
     return (
-      <div className="px-4 py-8 text-center text-red-600">{error || 'Customer not found'}</div>
+      <ErrorState
+        title="Couldn't load customer"
+        error={error || 'Customer not found'}
+        onRetry={load}
+      />
     );
   }
 
@@ -121,34 +138,37 @@ export function CustomerDetail() {
       <div className="mb-4 flex items-center gap-3">
         <button
           onClick={() => navigate('/customers')}
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
         >
           ← Back
         </button>
-        <h2 className="text-lg font-semibold text-gray-900">Customer Details</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Customer Details</h2>
       </div>
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-          <h3 className="text-base font-semibold text-gray-900">{customer.name}</h3>
-          <div className="flex gap-2">
+      <div className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div className="flex flex-col gap-3 border-b border-gray-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            {customer.name}
+          </h3>
+          <div className="flex flex-wrap gap-2">
             {editing ? (
-              <form onSubmit={saveEdit} className="flex gap-2">
+              <>
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
-                  className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                  className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
+                  form="customer-edit-form"
                   disabled={saving}
                   className="rounded bg-sky-600 px-3 py-1.5 text-sm text-white hover:bg-sky-700 disabled:opacity-50"
                 >
                   {saving ? 'Saving…' : 'Save'}
                 </button>
-              </form>
+              </>
             ) : (
               <>
                 <button
@@ -159,7 +179,7 @@ export function CustomerDetail() {
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                  className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
                 >
                   Delete
                 </button>
@@ -169,53 +189,55 @@ export function CustomerDetail() {
         </div>
         <div className="px-5 py-4">
           {formError && (
-            <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</div>
+            <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-100">
+              {formError}
+            </div>
           )}
           {editing ? (
-            <form onSubmit={saveEdit} className="space-y-4">
+            <form id="customer-edit-form" onSubmit={saveEdit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className={labelClass}>Name</label>
                   <input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClass}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className={labelClass}>Email</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClass}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <label className={labelClass}>Phone</label>
                   <input
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Address</label>
+                  <label className={labelClass}>Address</label>
                   <input
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <label className={labelClass}>Notes</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={2}
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   />
                 </div>
               </div>
@@ -223,28 +245,38 @@ export function CustomerDetail() {
           ) : (
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900">{customer.email}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.email}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                <dd className="mt-1 text-sm text-gray-900">{customer.phone || '—'}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {customer.phone || '—'}
+                </dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-sm font-medium text-gray-500">Address</dt>
-                <dd className="mt-1 text-sm text-gray-900">{customer.address || '—'}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Address</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {customer.address || '—'}
+                </dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-sm font-medium text-gray-500">Notes</dt>
-                <dd className="mt-1 text-sm text-gray-900">{customer.notes || '—'}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {customer.notes || '—'}
+                </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Created</dt>
-                <dd className="mt-1 text-sm text-gray-900">{formatDate(customer.createdAt)}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {formatDate(customer.createdAt)}
+                </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Updated</dt>
-                <dd className="mt-1 text-sm text-gray-900">{formatDate(customer.updatedAt)}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Updated</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {formatDate(customer.updatedAt)}
+                </dd>
               </div>
             </dl>
           )}
@@ -253,8 +285,12 @@ export function CustomerDetail() {
 
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">Order History</h3>
-          <p className="text-sm text-gray-500">{total} order{total !== 1 ? 's' : ''}</p>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Order History
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {total} order{total !== 1 ? 's' : ''}
+          </p>
         </div>
         <select
           value={sort}
@@ -262,7 +298,7 @@ export function CustomerDetail() {
             setSort(e.target.value as SortKey);
             setPage(1);
           }}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         >
           <option value="newest">Sort: Newest</option>
           <option value="oldest">Sort: Oldest</option>
@@ -271,61 +307,66 @@ export function CustomerDetail() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Order ID</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {orders.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
-                  No orders found
-                </td>
-              </tr>
-            ) : (
-              orders.map((o) => (
-                <tr key={o.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                    {o.id.slice(0, 8)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatDate(o.createdAt)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        o.status === 'completed'
-                          ? 'bg-green-100 text-green-800'
-                          : o.status === 'refunded'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {o.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {formatCurrency(o.total)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          limit={limit}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
-        />
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        {orders.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              title="No orders yet"
+              description="This customer hasn't placed any orders."
+            />
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
+                <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-800 dark:text-gray-300">
+                  <tr>
+                    <th className="px-4 py-3">Order #</th>
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {orders.map((o) => (
+                    <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                      <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-300">
+                        {o.orderNumber}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
+                        {formatDate(o.createdAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                            o.status === 'completed'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-100'
+                              : o.status === 'refunded'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-100'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-100'
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-200">
+                        {formatCurrency(o.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              limit={limit}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
+            />
+          </>
+        )}
       </div>
     </div>
   );
