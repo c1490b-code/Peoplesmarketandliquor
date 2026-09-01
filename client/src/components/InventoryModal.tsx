@@ -9,6 +9,10 @@ interface InventoryModalProps {
   onSubmit: (patch: InventoryPatch) => Promise<void>;
 }
 
+const inputClass =
+  'mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100';
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
+
 export function InventoryModal({ open, item, onClose, onSubmit }: InventoryModalProps) {
   const [form, setForm] = useState({
     quantityOnHand: 0,
@@ -60,7 +64,7 @@ export function InventoryModal({ open, item, onClose, onSubmit }: InventoryModal
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Cancel
           </button>
@@ -76,32 +80,34 @@ export function InventoryModal({ open, item, onClose, onSubmit }: InventoryModal
       }
     >
       {error && (
-        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-100">
+          {error}
+        </div>
       )}
       <form id="inventory-form" onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Quantity on hand</label>
+          <label className={labelClass}>Quantity on hand</label>
           <input
             type="number"
             min="0"
             value={form.quantityOnHand}
             onChange={(e) => setForm((f) => ({ ...f, quantityOnHand: Number(e.target.value) }))}
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Reorder level</label>
+            <label className={labelClass}>Reorder level</label>
             <input
               type="number"
               min="0"
               value={form.reorderLevel}
               onChange={(e) => setForm((f) => ({ ...f, reorderLevel: Number(e.target.value) }))}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Low stock threshold</label>
+            <label className={labelClass}>Low stock threshold</label>
             <input
               type="number"
               min="0"
@@ -109,16 +115,16 @@ export function InventoryModal({ open, item, onClose, onSubmit }: InventoryModal
               onChange={(e) =>
                 setForm((f) => ({ ...f, lowStockThreshold: Number(e.target.value) }))
               }
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Location</label>
+          <label className={labelClass}>Location</label>
           <input
             value={form.location}
             onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </form>

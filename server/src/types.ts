@@ -198,3 +198,11 @@ export interface LowStockProduct {
   lowStockThreshold: number;
   status: 'out' | 'low';
 }
+
+export interface Database {
+  categories: Category[];
+  products: Product[];
+  inventory: InventoryItem[];
+  customers: Customer[];
+  orders: Order[];
+}

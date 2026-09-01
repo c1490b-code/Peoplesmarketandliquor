@@ -17,6 +17,10 @@ const empty: CustomerInput = {
   notes: '',
 };
 
+const inputClass =
+  'mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100';
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
+
 export function CustomerForm({ open, customer, onClose, onSubmit }: CustomerFormProps) {
   const [form, setForm] = useState<CustomerInput>(empty);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +78,7 @@ export function CustomerForm({ open, customer, onClose, onSubmit }: CustomerForm
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Cancel
           </button>
@@ -90,52 +94,54 @@ export function CustomerForm({ open, customer, onClose, onSubmit }: CustomerForm
       }
     >
       {error && (
-        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-100">
+          {error}
+        </div>
       )}
       <form id="customer-form" onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className={labelClass}>Name</label>
             <input
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className={labelClass}>Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => update('email', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone</label>
+            <label className={labelClass}>Phone</label>
             <input
               value={form.phone}
               onChange={(e) => update('phone', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Address</label>
+            <label className={labelClass}>Address</label>
             <input
               value={form.address}
               onChange={(e) => update('address', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Notes</label>
+            <label className={labelClass}>Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => update('notes', e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>
