@@ -1,0 +1,499 @@
+{
+  "categories": [
+    {
+      "id": "d2cddf40-fb1c-425c-85a7-f99470c157a8",
+      "name": "Beer",
+      "description": "Beer products",
+      "createdAt": "2026-09-01T09:13:11.611Z",
+      "updatedAt": "2026-09-01T09:13:11.611Z"
+    },
+    {
+      "id": "20dd558e-dc7c-4dcd-ac6a-15a1d7ff0d05",
+      "name": "Wine",
+      "description": "Wine products",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "63410f90-9999-4d3f-8b4c-90a11f0b931b",
+      "name": "Spirits",
+      "description": "Spirits products",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "35e1cde3-31de-434f-adcb-fbdfbfd2eefd",
+      "name": "Grocery",
+      "description": "Grocery products",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "e32b3064-922b-4286-80e9-39a79e4ce679",
+      "name": "Snacks",
+      "description": "Snacks products",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "23a636de-5cdd-4a67-b86d-de03c925f1c1",
+      "name": "Tobacco",
+      "description": "Tobacco products",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "37ea22d5-b865-4ba5-8a50-d506db6e7fe8",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Bud Light 12pk",
+      "sku": "BEER-BL-12",
+      "categoryId": "d2cddf40-fb1c-425c-85a7-f99470c157a8",
+      "price": 12.99,
+      "cost": 8.5,
+      "unit": "case",
+      "description": "Bud Light 12 pack cans"
+    },
+    {
+      "id": "66fc9774-25a4-48a8-9bde-e0d9daadcc48",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Corona Extra 6pk",
+      "sku": "BEER-CO-06",
+      "categoryId": "d2cddf40-fb1c-425c-85a7-f99470c157a8",
+      "price": 9.99,
+      "cost": 6.2,
+      "unit": "case",
+      "description": "Corona Extra 6 pack bottles"
+    },
+    {
+      "id": "d5c87c67-222d-40ab-9ec5-62b0d8fa2bf8",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Modelo Especial 12pk",
+      "sku": "BEER-MO-12",
+      "categoryId": "d2cddf40-fb1c-425c-85a7-f99470c157a8",
+      "price": 14.49,
+      "cost": 9.1,
+      "unit": "case",
+      "description": "Modelo Especial 12 pack"
+    },
+    {
+      "id": "6b1393af-ff85-49c7-a8f9-2e2f7b0082b2",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Cabernet Sauvignon",
+      "sku": "WINE-CAB-750",
+      "categoryId": "20dd558e-dc7c-4dcd-ac6a-15a1d7ff0d05",
+      "price": 18,
+      "cost": 11,
+      "unit": "bottle",
+      "description": "California Cabernet 750ml"
+    },
+    {
+      "id": "37780253-8c53-43be-ac97-03548552b77c",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Chardonnay",
+      "sku": "WINE-CHD-750",
+      "categoryId": "20dd558e-dc7c-4dcd-ac6a-15a1d7ff0d05",
+      "price": 15.5,
+      "cost": 9.5,
+      "unit": "bottle",
+      "description": "California Chardonnay 750ml"
+    },
+    {
+      "id": "12226e3f-ffb4-4d2a-9760-c2dbcc1ceedf",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Jack Daniels Whiskey",
+      "sku": "SPIRIT-JD-750",
+      "categoryId": "63410f90-9999-4d3f-8b4c-90a11f0b931b",
+      "price": 29.99,
+      "cost": 19,
+      "unit": "bottle",
+      "description": "Jack Daniels Old No. 7 750ml"
+    },
+    {
+      "id": "fa5474ee-cc12-47e9-80ef-080b34f23c27",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Tito's Vodka",
+      "sku": "SPIRIT-TV-750",
+      "categoryId": "63410f90-9999-4d3f-8b4c-90a11f0b931b",
+      "price": 24.99,
+      "cost": 15.5,
+      "unit": "bottle",
+      "description": "Tito's Handmade Vodka 750ml"
+    },
+    {
+      "id": "4833876e-e5cb-4ada-a992-16afbef4b020",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Smirnoff Vodka",
+      "sku": "SPIRIT-SM-750",
+      "categoryId": "63410f90-9999-4d3f-8b4c-90a11f0b931b",
+      "price": 16.99,
+      "cost": 10,
+      "unit": "bottle",
+      "description": "Smirnoff No. 21 750ml"
+    },
+    {
+      "id": "8f0ba143-2761-4d11-ab03-9414e0ca9ebb",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Coca-Cola 2L",
+      "sku": "GROC-CC-2L",
+      "categoryId": "35e1cde3-31de-434f-adcb-fbdfbfd2eefd",
+      "price": 2.49,
+      "cost": 1.1,
+      "unit": "bottle",
+      "description": "Coca-Cola 2 liter"
+    },
+    {
+      "id": "5b504998-1feb-4b23-b078-f16ac347a5f8",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Bottled Water 24pk",
+      "sku": "GROC-BW-24",
+      "categoryId": "35e1cde3-31de-434f-adcb-fbdfbfd2eefd",
+      "price": 4.99,
+      "cost": 2.5,
+      "unit": "case",
+      "description": "Spring water 24 pack"
+    },
+    {
+      "id": "64788f52-25b5-4d10-808b-62359350ab31",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Lay's Potato Chips",
+      "sku": "SNACK-LC-01",
+      "categoryId": "e32b3064-922b-4286-80e9-39a79e4ce679",
+      "price": 3.29,
+      "cost": 1.5,
+      "unit": "bag",
+      "description": "Classic potato chips"
+    },
+    {
+      "id": "4032b0e4-7378-4403-9d98-fb38d750e1b2",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Beef Jerky",
+      "sku": "SNACK-BJ-01",
+      "categoryId": "e32b3064-922b-4286-80e9-39a79e4ce679",
+      "price": 5.99,
+      "cost": 3,
+      "unit": "pack",
+      "description": "Original beef jerky"
+    },
+    {
+      "id": "7999105c-6237-47ca-a263-5ef550eb3bed",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Marlboro Reds",
+      "sku": "TOB-MR-01",
+      "categoryId": "23a636de-5cdd-4a67-b86d-de03c925f1c1",
+      "price": 9.5,
+      "cost": 6,
+      "unit": "pack",
+      "description": "Marlboro Red cigarettes"
+    },
+    {
+      "id": "86701177-bae3-4948-90d3-8158261fc200",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z",
+      "name": "Newport Menthol",
+      "sku": "TOB-NM-01",
+      "categoryId": "23a636de-5cdd-4a67-b86d-de03c925f1c1",
+      "price": 9.5,
+      "cost": 6,
+      "unit": "pack",
+      "description": "Newport Menthol cigarettes"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "a2ebef9f-c67b-41dd-8ffc-6448be638dfa",
+      "productId": "37ea22d5-b865-4ba5-8a50-d506db6e7fe8",
+      "quantityOnHand": 42,
+      "reorderLevel": 20,
+      "lowStockThreshold": 10,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "d8c2399e-008b-4b87-a248-e7eeea344862",
+      "productId": "66fc9774-25a4-48a8-9bde-e0d9daadcc48",
+      "quantityOnHand": 4,
+      "reorderLevel": 15,
+      "lowStockThreshold": 8,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "1dee18e6-bd71-4d88-86d7-68b6bf5a1d0b",
+      "productId": "d5c87c67-222d-40ab-9ec5-62b0d8fa2bf8",
+      "quantityOnHand": 0,
+      "reorderLevel": 18,
+      "lowStockThreshold": 9,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "affe9867-57d4-450a-a267-88bcad5c7221",
+      "productId": "6b1393af-ff85-49c7-a8f9-2e2f7b0082b2",
+      "quantityOnHand": 26,
+      "reorderLevel": 12,
+      "lowStockThreshold": 6,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "2f42e01f-68d0-48fe-a9bd-03d1f2722c3c",
+      "productId": "37780253-8c53-43be-ac97-03548552b77c",
+      "quantityOnHand": 13,
+      "reorderLevel": 12,
+      "lowStockThreshold": 6,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "ffd54854-a0fb-4f28-b652-03891acc831e",
+      "productId": "12226e3f-ffb4-4d2a-9760-c2dbcc1ceedf",
+      "quantityOnHand": 31,
+      "reorderLevel": 10,
+      "lowStockThreshold": 5,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "fb270f83-72e5-4ce9-9780-47dc29401064",
+      "productId": "fa5474ee-cc12-47e9-80ef-080b34f23c27",
+      "quantityOnHand": 7,
+      "reorderLevel": 10,
+      "lowStockThreshold": 5,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "daf5faa4-8b33-4e7c-afa4-60bef060e7b0",
+      "productId": "4833876e-e5cb-4ada-a992-16afbef4b020",
+      "quantityOnHand": 22,
+      "reorderLevel": 10,
+      "lowStockThreshold": 5,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "8bf4c30e-99f7-454d-96d6-e58c67dfffd9",
+      "productId": "8f0ba143-2761-4d11-ab03-9414e0ca9ebb",
+      "quantityOnHand": 58,
+      "reorderLevel": 24,
+      "lowStockThreshold": 12,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "8cc4d11d-f35d-4847-980d-d69fe1f0b387",
+      "productId": "5b504998-1feb-4b23-b078-f16ac347a5f8",
+      "quantityOnHand": 33,
+      "reorderLevel": 20,
+      "lowStockThreshold": 10,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "7c6805aa-2bb9-4b33-8ad8-92430b48e25a",
+      "productId": "64788f52-25b5-4d10-808b-62359350ab31",
+      "quantityOnHand": 9,
+      "reorderLevel": 15,
+      "lowStockThreshold": 8,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "2b3759f3-18d1-49fa-aafe-e403b1dc882b",
+      "productId": "4032b0e4-7378-4403-9d98-fb38d750e1b2",
+      "quantityOnHand": 17,
+      "reorderLevel": 10,
+      "lowStockThreshold": 5,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "f003bcba-0c5a-47bc-b060-b171e316376d",
+      "productId": "7999105c-6237-47ca-a263-5ef550eb3bed",
+      "quantityOnHand": 3,
+      "reorderLevel": 20,
+      "lowStockThreshold": 10,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "de5ea9db-5383-46b6-ae80-ac0825b9cec9",
+      "productId": "86701177-bae3-4948-90d3-8158261fc200",
+      "quantityOnHand": 21,
+      "reorderLevel": 20,
+      "lowStockThreshold": 10,
+      "location": "Main Floor",
+      "lastRestockedAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": "732e48b2-3c95-4bdb-8911-9f487fae2b02",
+      "name": "John Smith",
+      "email": "john@example.com",
+      "phone": "555-0101",
+      "address": "123 Main St",
+      "notes": "Regular customer",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "f4f0e838-ce30-4635-a447-0c0e17845eff",
+      "name": "Jane Doe",
+      "email": "jane@example.com",
+      "phone": "555-0102",
+      "address": "456 Oak Ave",
+      "notes": "Prefers Bud Light",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "adaa0f3d-75ca-4b40-8c78-8f9fb89c36c2",
+      "name": "Bob Johnson",
+      "email": "bob@example.com",
+      "phone": "555-0103",
+      "address": "789 Pine Rd",
+      "notes": "Wholesale account",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "428b942b-a9a0-4569-ae62-019dedbcb731",
+      "orderNumber": "PML-20260901-0001",
+      "customerId": "732e48b2-3c95-4bdb-8911-9f487fae2b02",
+      "cashierId": null,
+      "items": [
+        {
+          "id": "64bf2ce1-e9cc-473d-b826-d378128f0e54",
+          "productId": "7999105c-6237-47ca-a263-5ef550eb3bed",
+          "name": "Marlboro Reds",
+          "sku": "TOB-MR-01",
+          "unit": "pack",
+          "quantity": 2,
+          "unitPrice": 9.5,
+          "cost": 6,
+          "lineTotal": 19
+        },
+        {
+          "id": "d6928922-e449-41d1-80d6-db327c4f33a3",
+          "productId": "66fc9774-25a4-48a8-9bde-e0d9daadcc48",
+          "name": "Corona Extra 6pk",
+          "sku": "BEER-CO-06",
+          "unit": "case",
+          "quantity": 2,
+          "unitPrice": 9.99,
+          "cost": 6.2,
+          "lineTotal": 19.98
+        }
+      ],
+      "subtotal": 38.98,
+      "discountType": "none",
+      "discountValue": 0,
+      "discountTotal": 0,
+      "taxRate": 0.08,
+      "taxTotal": 3.12,
+      "total": 42.1,
+      "paymentMethod": "cash",
+      "amountTendered": 42.1,
+      "changeDue": 0,
+      "status": "completed",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "b5a0f32f-40bc-44f9-b674-2fe47a862b48",
+      "orderNumber": "PML-20260901-0002",
+      "customerId": "f4f0e838-ce30-4635-a447-0c0e17845eff",
+      "cashierId": null,
+      "items": [
+        {
+          "id": "070f7f9f-ce28-4ae2-9463-63b0b7d80466",
+          "productId": "37ea22d5-b865-4ba5-8a50-d506db6e7fe8",
+          "name": "Bud Light 12pk",
+          "sku": "BEER-BL-12",
+          "unit": "case",
+          "quantity": 3,
+          "unitPrice": 12.99,
+          "cost": 8.5,
+          "lineTotal": 38.97
+        }
+      ],
+      "subtotal": 38.97,
+      "discountType": "none",
+      "discountValue": 0,
+      "discountTotal": 0,
+      "taxRate": 0.08,
+      "taxTotal": 3.12,
+      "total": 42.09,
+      "paymentMethod": "cash",
+      "amountTendered": 42.09,
+      "changeDue": 0,
+      "status": "completed",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    },
+    {
+      "id": "b220b94c-4ca7-4580-84b0-105f8ea6c328",
+      "orderNumber": "PML-20260901-0003",
+      "customerId": "adaa0f3d-75ca-4b40-8c78-8f9fb89c36c2",
+      "cashierId": null,
+      "items": [
+        {
+          "id": "d48b2089-80ad-4394-9a02-2c8fe5c01c29",
+          "productId": "7999105c-6237-47ca-a263-5ef550eb3bed",
+          "name": "Marlboro Reds",
+          "sku": "TOB-MR-01",
+          "unit": "pack",
+          "quantity": 3,
+          "unitPrice": 9.5,
+          "cost": 6,
+          "lineTotal": 28.5
+        }
+      ],
+      "subtotal": 28.5,
+      "discountType": "none",
+      "discountValue": 0,
+      "discountTotal": 0,
+      "taxRate": 0.08,
+      "taxTotal": 2.28,
+      "total": 30.78,
+      "paymentMethod": "cash",
+      "amountTendered": 30.78,
+      "changeDue": 0,
+      "status": "completed",
+      "createdAt": "2026-09-01T09:13:11.612Z",
+      "updatedAt": "2026-09-01T09:13:11.612Z"
+    }
+  ]
+}

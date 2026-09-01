@@ -146,3 +146,55 @@ export interface OrderSummary {
   taxTotal: number;
   total: number;
 }
+
+export type DashboardPeriod = 'daily' | 'weekly' | 'monthly';
+
+export interface SalesDataPoint {
+  period: string;
+  orders: number;
+  revenue: number;
+  cost: number;
+  profit: number;
+}
+
+export interface DashboardSummary {
+  period: DashboardPeriod | 'all';
+  totalSales: number;
+  totalOrders: number;
+  averageOrderValue: number;
+  totalCost: number;
+  totalProfit: number;
+  grossMargin: number;
+}
+
+export type TopProductSort = 'revenue' | 'quantity' | 'orders';
+
+export interface TopProduct {
+  id: string;
+  name: string;
+  sku: string;
+  unit: string;
+  price: number;
+  cost: number;
+  quantitySold: number;
+  revenue: number;
+  costTotal: number;
+  profit: number;
+  orders: number;
+  categoryId: string | null;
+  category: Category | null;
+}
+
+export interface LowStockProduct {
+  id: string;
+  name: string;
+  sku: string;
+  unit: string;
+  price: number;
+  categoryId: string | null;
+  category: Category | null;
+  quantityOnHand: number;
+  reorderLevel: number;
+  lowStockThreshold: number;
+  status: 'out' | 'low';
+}
