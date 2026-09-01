@@ -109,7 +109,23 @@ persisted to `server/src/data/db.json` (git-ignored). Override the path with the
     created `Order` with computed subtotal, discount, tax, total, and receipt
     fields.
 
-## Frontend
+### Dashboard
+- `GET /api/dashboard/summary` — KPI aggregates across completed orders:
+  `totalSales`, `totalOrders`, `averageOrderValue`, `totalCost`, `totalProfit`,
+  `grossMargin` (percentage).
+- `GET /api/dashboard/sales?period=daily|weekly|monthly&limit=N` — time-series
+  sales by period. `period` defaults to `monthly`; each data point has
+  `period`, `orders`, `revenue`, `cost`, and `profit`. Most recent `limit`
+  buckets are returned (default 30).
+- `GET /api/dashboard/top-products?limit=N&sort=revenue|quantity|orders` — top
+  selling products (by default, revenue) with units sold, revenue, cost, profit,
+  and order counts, joined with product/category data.
+- `GET /api/dashboard/low-stock` — products whose on-hand quantity is at or below
+  the low-stock threshold, with `status` of `out` or `low`, sorted worst-first.
+- `GET /api/dashboard/recent-orders?limit=N` — most recent orders (newest first),
+  used for the dashboard's recent-orders table.
+
+### Frontend
 
 - `/pos` — Point of Sale: product grid with search/category filter, cart sidebar
   with quantity controls and discount options (percent/amount), a payment modal
@@ -120,4 +136,7 @@ persisted to `server/src/data/db.json` (git-ignored). Override the path with the
 - `/inventory` — Inventory tracking with stock-level bars, status badges,
   low-stock filter/alerts, and an adjust-stock modal.
 - `/categories` — Category management (create, edit, delete).
+- `/dashboard` — Admin dashboard: KPI cards (total sales, orders, average order
+  value, gross margin), a period selector driving a sales-over-time chart, top
+  selling products, low-stock alerts, and a recent orders table.
 

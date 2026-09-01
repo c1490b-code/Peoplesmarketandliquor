@@ -6,11 +6,17 @@ import type {
   CreateOrderInput,
   Customer,
   CustomerInput,
+  DashboardPeriod,
+  DashboardSummary,
   InventoryItem,
+  LowStockProduct,
   Order,
   OrderItem,
   Product,
   ProductInput,
+  SalesDataPoint,
+  TopProduct,
+  TopProductSort,
 } from '../types';
 
 const DEFAULT_TAX_RATE = 0.0825;
@@ -178,6 +184,31 @@ function seedCustomer(
     createdAt: ts,
     updatedAt: ts,
   };
+}
+
+function formatDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function startOfWeek(d: Date): Date {
+  const date = new Date(d);
+  date.setHours(0, 0, 0, 0);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  return date;
+}
+
+function bucketKey(date: Date, period: DashboardPeriod): string {
+  if (period === 'daily') return formatDate(date);
+  if (period === 'monthly') {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+  }
+  return formatDate(startOfWeek(date));
+}
+
+function orderCost(order: Order): number {
+  return order.items.reduce((sum, i) => sum + i.cost * i.quantity, 0);
 }
 
 class Store {
@@ -527,6 +558,176 @@ class Store {
     this.db.orders.push(order);
     this.persist();
     return { order };
+  }
+
+  // ----- Dashboard -----
+  private completedOrders(): Order[] {
+    return this.db.orders.filter((o) => o.status === 'completed');
+  }
+
+  dashboardSummary(): DashboardSummary {
+    const orders = this.completedOrders();
+    const totalOrders = orders.length;
+    const totalSales = round2(orders.reduce((sum, o) => sum + o.total, 0));
+    const totalCost = round2(orders.reduce((sum, o) => sum + orderCost(o), 0));
+    const totalProfit = round2(totalSales - totalCost);
+    const averageOrderValue = totalOrders ? round2(totalSales / totalOrders) : 0;
+    const grossMargin = totalSales
+      ? round2((totalProfit / totalSales) * 100)
+      : 0;
+    return {
+      period: 'all',
+      totalSales,
+      totalOrders,
+      averageOrderValue,
+      totalCost,
+      totalProfit,
+      grossMargin,
+    };
+  }
+
+  salesSeries(
+    period: DashboardPeriod,
+    limit: number = 30,
+  ): SalesDataPoint[] {
+    const orders = this.completedOrders();
+    const groups = new Map<
+      string,
+      { orders: number; revenue: number; cost: number }
+    >();
+
+    for (const order of orders) {
+      const key = bucketKey(new Date(order.createdAt), period);
+      const g = groups.get(key) ?? { orders: 0, revenue: 0, cost: 0 };
+      g.orders++;
+      g.revenue += order.total;
+      g.cost += orderCost(order);
+      groups.set(key, g);
+    }
+
+    const data: SalesDataPoint[] = [];
+    for (const [key, g] of groups) {
+      data.push({
+        period: key,
+        orders: g.orders,
+        revenue: round2(g.revenue),
+        cost: round2(g.cost),
+        profit: round2(g.revenue - g.cost),
+      });
+    }
+    data.sort((a, b) => a.period.localeCompare(b.period));
+    if (limit > 0) {
+      return data.slice(-limit);
+    }
+    return data;
+  }
+
+  topProducts(options: {
+    limit?: number;
+    sort?: TopProductSort;
+  } = {}): TopProduct[] {
+    const orders = this.completedOrders();
+    const products = this.db.products;
+    const categories = this.db.categories;
+    const agg = new Map<
+      string,
+      { quantity: number; revenue: number; cost: number; orders: number }
+    >();
+
+    for (const order of orders) {
+      const seen = new Set<string>();
+      for (const item of order.items) {
+        const a = agg.get(item.productId) ?? {
+          quantity: 0,
+          revenue: 0,
+          cost: 0,
+          orders: 0,
+        };
+        a.quantity += item.quantity;
+        a.revenue += item.lineTotal;
+        a.cost += item.cost * item.quantity;
+        agg.set(item.productId, a);
+        seen.add(item.productId);
+      }
+      seen.forEach((pid) => {
+        agg.get(pid)!.orders++;
+      });
+    }
+
+    const sorters: Record<TopProductSort, (a: TopProduct, b: TopProduct) => number> = {
+      revenue: (a, b) => b.revenue - a.revenue,
+      quantity: (a, b) => b.quantitySold - a.quantitySold,
+      orders: (a, b) => b.orders - a.orders,
+    };
+
+    const result: TopProduct[] = [];
+    for (const [productId, a] of agg) {
+      const product = products.find((p) => p.id === productId);
+      if (!product) continue;
+      const category = product.categoryId
+        ? categories.find((c) => c.id === product.categoryId) ?? null
+        : null;
+      result.push({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        unit: product.unit,
+        price: product.price,
+        cost: product.cost,
+        quantitySold: a.quantity,
+        revenue: round2(a.revenue),
+        costTotal: round2(a.cost),
+        profit: round2(a.revenue - a.cost),
+        orders: a.orders,
+        categoryId: product.categoryId,
+        category,
+      });
+    }
+
+    result.sort(sorters[options.sort ?? 'revenue']);
+    const limit = options.limit ?? 10;
+    return limit > 0 ? result.slice(0, limit) : result;
+  }
+
+  lowStockProducts(): LowStockProduct[] {
+    const products = this.db.products;
+    const categories = this.db.categories;
+    const result: LowStockProduct[] = [];
+
+    for (const item of this.db.inventory) {
+      let status: 'out' | 'low' | 'ok' = 'ok';
+      if (item.quantityOnHand <= 0) status = 'out';
+      else if (item.quantityOnHand <= item.lowStockThreshold) status = 'low';
+      if (status === 'ok') continue;
+
+      const product = products.find((p) => p.id === item.productId);
+      if (!product) continue;
+      const category = product.categoryId
+        ? categories.find((c) => c.id === product.categoryId) ?? null
+        : null;
+      result.push({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        unit: product.unit,
+        price: product.price,
+        categoryId: product.categoryId,
+        category,
+        quantityOnHand: item.quantityOnHand,
+        reorderLevel: item.reorderLevel,
+        lowStockThreshold: item.lowStockThreshold,
+        status,
+      });
+    }
+
+    result.sort((a, b) => a.quantityOnHand - b.quantityOnHand);
+    return result;
+  }
+
+  recentOrders(limit: number = 10): Order[] {
+    return [...this.db.orders]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
   }
 }
 

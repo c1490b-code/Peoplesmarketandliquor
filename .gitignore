@@ -43,5 +43,8 @@ coverage/
 *.tsbuildinfo
 
 # Runtime data store
-server/src/data/db.json
+# The server persists its JSON store to `data/db.json` (relative to the
+# workspace dir) unless DATA_FILE overrides the path. Ignore it everywhere.
+data/db.json
 /data/
+server/data/db.json

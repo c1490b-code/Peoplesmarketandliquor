@@ -4,11 +4,14 @@ import type {
   Customer,
   CustomerInput,
   CustomerQuery,
+  DashboardPeriod,
+  DashboardSummary,
   InventoryItem,
   InventoryPatch,
   InventoryQuery,
   InventoryStatus,
   InventoryView,
+  LowStockProduct,
   Order,
   OrderQuery,
   Paginated,
@@ -16,6 +19,9 @@ import type {
   ProductInput,
   ProductQuery,
   ProductWithCategory,
+  SalesDataPoint,
+  TopProduct,
+  TopProductSort,
 } from './types';
 
 const BASE = '/api';
@@ -118,6 +124,16 @@ export const api = {
         body: JSON.stringify(input),
       }),
   },
+  dashboard: {
+    summary: () => request<DashboardSummary>(`${BASE}/dashboard/summary`),
+    sales: (query: { period?: DashboardPeriod; limit?: number } = {}) =>
+      request<SalesDataPoint[]>(`${BASE}/dashboard/sales${qs(query)}`),
+    topProducts: (query: { limit?: number; sort?: TopProductSort } = {}) =>
+      request<TopProduct[]>(`${BASE}/dashboard/top-products${qs(query)}`),
+    lowStock: () => request<LowStockProduct[]>(`${BASE}/dashboard/low-stock`),
+    recentOrders: (query: { limit?: number } = {}) =>
+      request<Order[]>(`${BASE}/dashboard/recent-orders${qs(query)}`),
+  },
 };
 
 export type {
@@ -125,11 +141,14 @@ export type {
   Customer,
   CustomerInput,
   CustomerQuery,
+  DashboardPeriod,
+  DashboardSummary,
   InventoryItem,
   InventoryPatch,
   InventoryQuery,
   InventoryStatus,
   InventoryView,
+  LowStockProduct,
   Order,
   OrderQuery,
   Paginated,
@@ -137,4 +156,6 @@ export type {
   ProductInput,
   ProductQuery,
   ProductWithCategory,
+  SalesDataPoint,
+  TopProduct,
 };

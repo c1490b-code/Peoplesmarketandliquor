@@ -6,6 +6,7 @@ import { inventoryRouter } from './routes/inventory';
 import { categoriesRouter } from './routes/categories';
 import { ordersRouter } from './routes/orders';
 import { customersRouter } from './routes/customers';
+import { dashboardRouter } from './routes/dashboard';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/inventory', inventoryRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/customers', customersRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });
