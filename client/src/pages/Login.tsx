@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -63,7 +63,7 @@ export function Login() {
         </button>
       </form>
       <p className="mt-4 text-center text-sm text-gray-600">
-        Don't have an account? <Link to="/register" className="text-sky-600 hover:underline">Create one</Link>
+        Don&apos;t have an account? <Link to="/register" className="text-sky-600 hover:underline">Create one</Link>
       </p>
       {import.meta.env.DEV && (
         <p className="mt-4 rounded bg-gray-50 p-3 text-xs text-gray-500">

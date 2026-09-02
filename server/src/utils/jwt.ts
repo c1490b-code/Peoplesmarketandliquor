@@ -9,6 +9,7 @@ function getSecret(): string {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('JWT_SECRET must be set in production');
     }
+    console.warn('[auth] JWT_SECRET is not set; using an ephemeral dev secret. Tokens will be invalidated on restart.');
     cachedSecret = `dev-secret-${process.pid}-${Date.now()}`;
     return cachedSecret;
   }
@@ -17,18 +18,25 @@ function getSecret(): string {
 }
 
 const TOKEN_TTL = '7d';
+const ALGORITHM = 'HS256' as const;
 
-export function signToken(payload: { id: string; email: string; name: string; role: string }): string {
-  return jwt.sign(payload, getSecret(), { expiresIn: TOKEN_TTL });
+export interface TokenPayload {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
 }
 
-export function verifyToken(token: string) {
-  return jwt.verify(token, getSecret()) as unknown as {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-  };
+export function signToken(payload: TokenPayload): string {
+  return jwt.sign(payload, getSecret(), { expiresIn: TOKEN_TTL, algorithm: ALGORITHM });
+}
+
+export function verifyToken(token: string): TokenPayload {
+  const decoded = jwt.verify(token, getSecret(), { algorithms: [ALGORITHM] });
+  if (typeof decoded === 'string' || decoded === null) {
+    throw new Error('Invalid token payload');
+  }
+  return decoded as TokenPayload;
 }
 
 const revoked = new Set<string>();

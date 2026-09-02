@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { store } from '../data/store';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, type AuthedRequest } from '../middleware/auth';
 import { signToken, revokeToken, verifyToken } from '../utils/jwt';
 import { authLimiter } from '../utils/rateLimit';
-import type { AuthResponse, User, UserInput, UserRole } from '../types';
+import type { AuthResponse, UserInput, UserRole } from '../types';
 
 export const authRouter = Router();
 
@@ -21,7 +21,7 @@ function validateRegisterBody(body: unknown): { error?: string; value?: Omit<Use
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('email is invalid');
   if (!name) errors.push('name is required');
   if (!password) errors.push('password is required');
-  else if (password.length < 6) errors.push('password must be at least 6 characters');
+  else if (password.length < 8) errors.push('password must be at least 8 characters');
   if (errors.length) return { error: errors.join('; ') };
   return { value: { email, name, password } };
 }
@@ -49,6 +49,8 @@ function setAuthCookie(res: Response, token: string) {
     path: '/',
   });
 }
+
+const DUMMY_BCRYPT_HASH = '$2b$10$CwTycUXWue0Thq9StjUM0uJ8.sIyKlIkLpF7eEyFdPj9WCjJ8QGJC';
 
 authRouter.post('/register', authLimiter(), async (req: Request, res: Response) => {
   try {
@@ -87,7 +89,7 @@ authRouter.post('/register', authLimiter(), async (req: Request, res: Response) 
     const passwordHash = await bcrypt.hash(value.password, 10);
     const user = store.createUser({ ...value, role }, passwordHash);
     const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
-    const response: AuthResponse = { token, user };
+    const response: AuthResponse = { user };
     setAuthCookie(res, token);
     res.status(201).json(response);
   } catch {
@@ -105,6 +107,7 @@ authRouter.post('/login', authLimiter(), async (req: Request, res: Response) => 
     }
     const user = store.getUserByEmail(value.email);
     if (!user) {
+      await bcrypt.compare(value.password, DUMMY_BCRYPT_HASH);
       res.status(401).json({ error: 'Invalid email or password' });
       return;
     }
@@ -114,8 +117,8 @@ authRouter.post('/login', authLimiter(), async (req: Request, res: Response) => 
       return;
     }
     const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
-    const safeUser = (({ passwordHash: _ph, ...rest }: User & { passwordHash: string }) => rest)(user);
-    const response: AuthResponse = { token, user: safeUser };
+    const { passwordHash: _ph, ...safeUser } = user;
+    const response: AuthResponse = { user: safeUser };
     setAuthCookie(res, token);
     res.json(response);
   } catch {
@@ -124,18 +127,22 @@ authRouter.post('/login', authLimiter(), async (req: Request, res: Response) => 
   }
 });
 
-authRouter.post('/logout', authMiddleware, (_req: Request, res: Response) => {
-  const token = _req.cookies?.token;
+authRouter.post('/logout', authMiddleware, (req: AuthedRequest, res: Response) => {
+  const token = req.cookies?.token;
   if (token) {
     revokeToken(token);
   }
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
   res.status(204).end();
 });
 
-authRouter.get('/me', authMiddleware, (req: Request, res: Response) => {
-  const authedReq = req as Parameters<typeof authMiddleware>[0];
-  const user = store.getUserById(authedReq.user!.id);
+authRouter.get('/me', authMiddleware, (req: AuthedRequest, res: Response) => {
+  const user = store.getUserById(req.user!.id);
   if (!user) {
     res.status(404).json({ error: 'User not found' });
     return;

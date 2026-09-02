@@ -11,6 +11,8 @@ export interface AuthedRequest extends Request {
   };
 }
 
+const VALID_ROLES: readonly UserRole[] = ['admin', 'cashier'];
+
 export function authMiddleware(req: AuthedRequest, res: Response, next: NextFunction): void {
   const token = req.cookies?.token;
   if (!token) {
@@ -23,7 +25,16 @@ export function authMiddleware(req: AuthedRequest, res: Response, next: NextFunc
   }
   try {
     const decoded = verifyToken(token);
-    req.user = { ...decoded, role: decoded.role as UserRole };
+    if (typeof decoded.role !== 'string' || !VALID_ROLES.includes(decoded.role as UserRole)) {
+      res.status(401).json({ error: 'Invalid token role' });
+      return;
+    }
+    req.user = {
+      id: decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role as UserRole,
+    };
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });

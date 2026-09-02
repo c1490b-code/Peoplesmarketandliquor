@@ -84,30 +84,6 @@ function seed(): Database {
   return { categories, products, inventory, users: [] };
 }
 
-function seedUsers(): User[] {
-  const ts = now();
-  return [
-    {
-      id: randomUUID(),
-      email: 'admin@market.com',
-      name: 'Admin User',
-      role: 'admin',
-      passwordHash: '$2b$10$rQ7H8pZnJQ8x8n5X7Z9qOe1qW3vY8kL0mN2pQ5sT8uV1wX4yZ6aBc', 
-      createdAt: ts,
-      updatedAt: ts,
-    },
-    {
-      id: randomUUID(),
-      email: 'cashier@market.com',
-      name: 'Cashier User',
-      role: 'cashier',
-      passwordHash: '$2b$10$rQ7H8pZnJQ8x8n5X7Z9qOe1qW3vY8kL0mN2pQ5sT8uV1wX4yZ6aBc',
-      createdAt: ts,
-      updatedAt: ts,
-    },
-  ];
-}
-
 function seedCategory(name: string): Category {
   const ts = now();
   return {
@@ -135,16 +111,15 @@ class Store {
           categories: parsed.categories ?? [],
           products: parsed.products ?? [],
           inventory: parsed.inventory ?? [],
-          users: parsed.users ?? seedUsers(),
+          users: parsed.users ?? [],
         };
       }
     } catch {
       // fall through to seed
     }
     const seeded = seed();
-    const users = seedUsers();
-    this.persist({ ...seeded, users });
-    return { ...seeded, users };
+    this.persist(seeded);
+    return seeded;
   }
 
   private persist(db: Database = this.db): void {

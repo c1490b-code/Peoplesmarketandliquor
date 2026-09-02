@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import type { ReactNode } from 'react';
 
 export function Layout({ children }: { children?: ReactNode }) {

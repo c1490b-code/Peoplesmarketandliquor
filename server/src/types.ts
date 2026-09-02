@@ -18,17 +18,7 @@ export interface UserInput {
 }
 
 export interface AuthResponse {
-  token: string;
   user: Omit<User, 'passwordHash'>;
-}
-
-export interface MeResponse {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Paginated<T> {

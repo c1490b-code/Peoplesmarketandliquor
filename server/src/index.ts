@@ -40,9 +40,14 @@ app.use((err: Error, _req: Request, res: Response) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-store.load();
+export const ready: Promise<void> = (async () => {
+  store.load();
+  if (process.env.NODE_ENV !== 'production') {
+    await seedDemoUsers();
+  }
+})();
 
-seedDemoUsers().then(() => {
+ready.then(() => {
   if (require.main === module) {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
@@ -52,9 +57,11 @@ seedDemoUsers().then(() => {
 
 export { app };
 
-async function seedDemoUsers() {
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const cashierHash = await bcrypt.hash('cashier123', 10);
+export async function seedDemoUsers() {
+  const adminPassword = process.env.DEMO_ADMIN_PASSWORD || 'admin123';
+  const cashierPassword = process.env.DEMO_CASHIER_PASSWORD || 'cashier123';
+  const adminHash = await bcrypt.hash(adminPassword, 10);
+  const cashierHash = await bcrypt.hash(cashierPassword, 10);
   store.ensureUser('admin@market.com', 'Admin User', 'admin', adminHash);
   store.ensureUser('cashier@market.com', 'Cashier User', 'cashier', cashierHash);
 }

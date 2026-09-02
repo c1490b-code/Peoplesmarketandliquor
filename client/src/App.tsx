@@ -6,7 +6,7 @@ import { Inventory } from './pages/Inventory';
 import { Categories } from './pages/Categories';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { AuthProvider, useAuth } from './contexts/useAuth';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
